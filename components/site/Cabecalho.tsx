@@ -5,6 +5,7 @@ const LINKS = [
   { href: '/#como-funciona', rotulo: 'Como funciona' },
   { href: '/cursos', rotulo: 'Cursos' },
   { href: '/#instituicao', rotulo: 'Instituição' },
+  { href: '/consulta', rotulo: 'Consultar CPF' },
   { href: '/#duvidas', rotulo: 'Dúvidas' },
 ]
 

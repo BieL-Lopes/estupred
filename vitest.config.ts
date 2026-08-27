@@ -11,7 +11,13 @@ const env = loadEnv('test', process.cwd(), '')
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: { '@': fileURLToPath(new URL('./', import.meta.url)) },
+    alias: {
+      // Precisa vir antes do alias de '@', senão o prefixo não casa primeiro.
+      'server-only': fileURLToPath(
+        new URL('./tests/stubs/server-only.ts', import.meta.url),
+      ),
+      '@': fileURLToPath(new URL('./', import.meta.url)),
+    },
   },
   test: {
     env,

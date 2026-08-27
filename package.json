@@ -11,9 +11,9 @@
     "test:watch": "vitest tests/unidade",
     "test:integracao": "vitest run tests/integracao",
     "test:e2e": "playwright test",
-    "db:start": "supabase start",
-    "db:reset": "supabase db reset",
-    "db:tipos": "supabase gen types typescript --local > lib/supabase/tipos.ts"
+    "db:start": "npx supabase start",
+    "db:reset": "npx supabase db reset",
+    "db:tipos": "npx supabase gen types typescript --local > lib/supabase/tipos.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",

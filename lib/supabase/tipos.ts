@@ -34,6 +34,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      consultas_publicas: {
+        Row: {
+          cpf_consultado: string
+          created_at: string
+          encontrou: boolean
+          id: string
+          origem: string | null
+        }
+        Insert: {
+          cpf_consultado: string
+          created_at?: string
+          encontrou: boolean
+          id?: string
+          origem?: string | null
+        }
+        Update: {
+          cpf_consultado?: string
+          created_at?: string
+          encontrou?: boolean
+          id?: string
+          origem?: string | null
+        }
+        Relationships: []
+      }
       curso_ufs: {
         Row: {
           curso_id: string
@@ -133,6 +157,7 @@ export type Database = {
           nome: string
           parentesco: string | null
           responsavel_id: string | null
+          rg: string | null
           unidade_prisional_id: string
         }
         Insert: {
@@ -144,6 +169,7 @@ export type Database = {
           nome: string
           parentesco?: string | null
           responsavel_id?: string | null
+          rg?: string | null
           unidade_prisional_id: string
         }
         Update: {
@@ -155,6 +181,7 @@ export type Database = {
           nome?: string
           parentesco?: string | null
           responsavel_id?: string | null
+          rg?: string | null
           unidade_prisional_id?: string
         }
         Relationships: [
@@ -225,6 +252,9 @@ export type Database = {
           codigo: string
           created_at: string
           curso_id: string
+          data_compra: string | null
+          data_inicio: string | null
+          data_prova: string | null
           frete_centavos: number
           id: string
           interno_id: string
@@ -240,6 +270,9 @@ export type Database = {
           codigo?: string
           created_at?: string
           curso_id: string
+          data_compra?: string | null
+          data_inicio?: string | null
+          data_prova?: string | null
           frete_centavos: number
           id?: string
           interno_id: string
@@ -255,6 +288,9 @@ export type Database = {
           codigo?: string
           created_at?: string
           curso_id?: string
+          data_compra?: string | null
+          data_inicio?: string | null
+          data_prova?: string | null
           frete_centavos?: number
           id?: string
           interno_id?: string
