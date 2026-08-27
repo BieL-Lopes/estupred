@@ -1,13 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { chaveAnonSupabase, urlSupabase } from '@/lib/env'
 import type { Database } from './tipos'
 
 export async function criarClienteServidor() {
   const armazem = await cookies()
 
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    urlSupabase(),
+    chaveAnonSupabase(),
     {
       cookies: {
         getAll: () => armazem.getAll(),

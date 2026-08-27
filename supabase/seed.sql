@@ -1,3 +1,12 @@
+-- ATENCAO: DADOS DE DESENVOLVIMENTO. NAO APLIQUE EM PRODUCAO.
+--
+-- Este arquivo cria tres usuarios com a senha 'senha-de-teste', um deles
+-- ADMIN. Ele roda apenas em `supabase db reset` local. Em producao use
+-- `supabase db push`, que aplica somente as migrations.
+--
+-- NUNCA rode `supabase db reset --linked`: isso apagaria o banco de
+-- producao e criaria um admin com senha publicamente conhecida.
+
 -- Usuários de desenvolvimento. A senha é a mesma para os três.
 --
 -- As quatro colunas de token vão como string vazia, não NULL: o GoTrue as lê
