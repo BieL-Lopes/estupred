@@ -54,7 +54,7 @@ export default function ComoFunciona() {
       <div className="mt-12 space-y-8">
         {ETAPAS.map((etapa) => (
           <section key={etapa.titulo}>
-            <h2 className="text-lg font-semibold text-marca-700">
+            <h2 className="text-lg font-semibold text-acento">
               {etapa.titulo}
             </h2>
             <p className="mt-2 text-texto-suave">{etapa.texto}</p>

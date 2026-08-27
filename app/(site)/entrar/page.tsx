@@ -6,7 +6,7 @@ export const metadata = { title: 'Entrar — estupred' }
 export default function Entrar() {
   return (
     <main className="mx-auto w-full max-w-md px-6 py-16">
-      <h1 className="text-2xl font-semibold text-marca-700">Entrar</h1>
+      <h1 className="text-2xl font-semibold text-acento">Entrar</h1>
       <p className="mt-2 text-texto-suave">
         Acompanhe o andamento do curso e os certificados.
       </p>

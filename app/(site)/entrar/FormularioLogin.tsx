@@ -11,7 +11,7 @@ export function FormularioLogin() {
     {},
   )
 
-  const campo = 'mt-1 w-full rounded-lg border border-borda px-3 py-2.5'
+  const campo = 'mt-1 w-full rounded-lg border border-borda bg-cartao px-3 py-2.5 text-texto'
 
   return (
     <form action={acao} className="mt-8 space-y-4">
@@ -52,7 +52,7 @@ export function FormularioLogin() {
       <button
         type="submit"
         disabled={pendente}
-        className="w-full rounded-lg bg-marca-700 px-4 py-3 font-medium text-white disabled:opacity-60"
+        className="w-full rounded-lg bg-acento px-4 py-3 font-semibold text-fundo disabled:opacity-60"
       >
         {pendente ? 'Entrando…' : 'Entrar'}
       </button>

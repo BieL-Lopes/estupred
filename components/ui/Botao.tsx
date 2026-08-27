@@ -2,15 +2,15 @@ import Link from 'next/link'
 import type { ComponentProps, ReactNode } from 'react'
 
 const ESTILOS = {
-  primario: 'bg-marca-700 text-white hover:bg-marca-600',
-  secundario: 'bg-white text-marca-700 border border-marca-200 hover:bg-marca-50',
-  destaque: 'bg-destaque-500 text-marca-900 hover:brightness-95',
+  primario: 'bg-acento text-fundo hover:bg-acento-claro',
+  secundario: 'border border-borda-forte text-texto hover:bg-cartao-2',
+  fantasma: 'text-texto-suave hover:text-texto',
 } as const
 
 type Variante = keyof typeof ESTILOS
 
 const BASE =
-  'inline-flex items-center justify-center rounded-lg px-5 py-3 text-sm font-semibold transition disabled:opacity-60'
+  'inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold transition disabled:opacity-60'
 
 export function Botao({
   variante = 'primario',

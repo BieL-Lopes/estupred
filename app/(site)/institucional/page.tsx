@@ -6,7 +6,7 @@ export default function Institucional() {
       <h1 className="text-3xl font-bold text-texto">A instituição</h1>
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-marca-700">
+        <h2 className="text-lg font-semibold text-acento">
           Quem emite os certificados
         </h2>
         <p className="mt-2 text-texto-suave">
@@ -17,7 +17,7 @@ export default function Institucional() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-marca-700">Base legal</h2>
+        <h2 className="text-lg font-semibold text-acento">Base legal</h2>
         <p className="mt-2 text-texto-suave">
           Os cursos seguem as portarias da Vara de Execuções Penais, entre elas
           a VEP 10/2016, que disciplina a oferta de educação a distância no
@@ -28,7 +28,7 @@ export default function Institucional() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-marca-700">
+        <h2 className="text-lg font-semibold text-acento">
           Nosso compromisso
         </h2>
         <p className="mt-2 text-texto-suave">

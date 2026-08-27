@@ -1,15 +1,15 @@
 import { ROTULO_STATUS, type StatusMatricula } from '@/lib/dominio/tipos'
 
 const CORES: Record<StatusMatricula, string> = {
-  rascunho: 'bg-slate-100 text-slate-700',
-  aguardando_pagamento: 'bg-destaque-100 text-destaque-700',
-  paga: 'bg-marca-100 text-marca-700',
-  material_enviado: 'bg-marca-100 text-marca-700',
-  prova_aplicada: 'bg-marca-100 text-marca-700',
-  aprovado: 'bg-progresso-100 text-progresso-700',
-  reprovado: 'bg-destaque-100 text-destaque-700',
-  certificado_emitido: 'bg-progresso-100 text-progresso-700',
-  cancelada: 'bg-slate-100 text-slate-500',
+  rascunho: 'bg-cartao-2 text-texto-fraco',
+  aguardando_pagamento: 'bg-aviso-fundo text-aviso',
+  paga: 'bg-acento-fundo text-acento-claro',
+  material_enviado: 'bg-acento-fundo text-acento-claro',
+  prova_aplicada: 'bg-acento-fundo text-acento-claro',
+  aprovado: 'bg-ok-fundo text-ok',
+  reprovado: 'bg-aviso-fundo text-aviso',
+  certificado_emitido: 'bg-ok-fundo text-ok',
+  cancelada: 'bg-cartao-2 text-texto-fraco',
 }
 
 export function Selo({ status }: { status: StatusMatricula }) {
