@@ -117,27 +117,42 @@ describe('isolamento entre responsáveis', () => {
   })
 })
 
+// A RLS nega update e delete pela ausência de policy. Isso não levanta erro
+// no PostgREST: ele filtra as linhas visíveis para zero, e a operação
+// simplesmente não afeta nada. Por isso o contrato aqui é "nenhuma linha
+// afetada e o dado intacto", não "retornou erro".
 describe('matricula_eventos é append-only', () => {
   it('impede update mesmo para o admin', async () => {
     const c = await clienteAutenticado('admin@estupred.com.br', 'senha-de-teste')
-    const { data: evento } = await admin
-      .from('matricula_eventos').select('id').limit(1).single()
+    const { data: antes } = await admin
+      .from('matricula_eventos').select('id, nota').limit(1).single()
 
-    const { error } = await c
+    const { data: afetadas } = await c
       .from('matricula_eventos')
       .update({ nota: 'adulterado' })
-      .eq('id', evento!.id)
-    expect(error).not.toBeNull()
+      .eq('id', antes!.id)
+      .select()
+
+    expect(afetadas ?? []).toHaveLength(0)
+
+    const { data: depois } = await admin
+      .from('matricula_eventos').select('nota').eq('id', antes!.id).single()
+    expect(depois!.nota).toBe(antes!.nota)
   })
 
   it('impede delete mesmo para o admin', async () => {
     const c = await clienteAutenticado('admin@estupred.com.br', 'senha-de-teste')
-    const { data: evento } = await admin
+    const { data: antes } = await admin
       .from('matricula_eventos').select('id').limit(1).single()
 
-    const { error } = await c
-      .from('matricula_eventos').delete().eq('id', evento!.id)
-    expect(error).not.toBeNull()
+    const { data: afetadas } = await c
+      .from('matricula_eventos').delete().eq('id', antes!.id).select()
+
+    expect(afetadas ?? []).toHaveLength(0)
+
+    const { data: aindaExiste } = await admin
+      .from('matricula_eventos').select('id').eq('id', antes!.id).maybeSingle()
+    expect(aindaExiste).not.toBeNull()
   })
 })
 

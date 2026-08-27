@@ -106,11 +106,7 @@ describe('schema', () => {
     await admin.from('unidades_prisionais').delete().eq('id', unidade!.id)
   })
 
-  it('bloqueia update em matricula_eventos', async () => {
-    const { error } = await admin
-      .from('matricula_eventos')
-      .update({ nota: 'alterado' })
-      .eq('id', '00000000-0000-0000-0000-000000000000')
-    expect(error).not.toBeNull()
-  })
+  // A garantia append-only de matricula_eventos é da RLS, e o cliente usado
+  // aqui é service role, que ignora RLS por definição. O teste correto vive
+  // em rls.test.ts, com um admin autenticado.
 })

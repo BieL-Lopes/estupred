@@ -1,7 +1,13 @@
 -- Usuários de desenvolvimento. A senha é a mesma para os três.
+--
+-- As quatro colunas de token vão como string vazia, não NULL: o GoTrue as lê
+-- como string não-nula em Go, e um NULL faz todo login falhar com
+-- "Database error querying schema".
 insert into auth.users (
   id, instance_id, aud, role, email, encrypted_password,
   email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
+  confirmation_token, recovery_token,
+  email_change, email_change_token_new,
   created_at, updated_at
 )
 values
@@ -10,18 +16,21 @@ values
    'admin@estupred.com.br', crypt('senha-de-teste', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}',
    '{"nome":"Administração","cpf":"52998224725","telefone":"61999999999"}',
+   '', '', '', '',
    now(), now()),
   ('22222222-2222-2222-2222-222222222222',
    '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'ana@exemplo.com', crypt('senha-de-teste', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}',
    '{"nome":"Ana Souza","cpf":"39053344705","telefone":"61988888888"}',
+   '', '', '', '',
    now(), now()),
   ('33333333-3333-3333-3333-333333333333',
    '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
    'bruno@exemplo.com', crypt('senha-de-teste', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}',
    '{"nome":"Bruno Lima","cpf":"16899535009","telefone":"61977777777"}',
+   '', '', '', '',
    now(), now());
 
 update profiles set role = 'admin'
