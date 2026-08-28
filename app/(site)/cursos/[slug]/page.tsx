@@ -10,7 +10,29 @@ export default async function DetalheCurso({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const curso = await obterCurso(slug)
+  const { curso, indisponivel } = await obterCurso(slug)
+
+  // Sem catálogo não dá para saber se o curso existe. Devolver 404 seria
+  // mentir: diria que o curso não existe quando o problema é nosso.
+  if (indisponivel) {
+    return (
+      <main className="mx-auto max-w-2xl px-6 py-24 text-center">
+        <h1 className="text-2xl font-bold text-texto">
+          Não foi possível carregar este curso
+        </h1>
+        <p className="mt-3 text-texto-suave">
+          É uma instabilidade temporária. Tente novamente em alguns instantes.
+        </p>
+        <Link
+          href="/cursos"
+          className="mt-8 inline-block text-sm font-semibold text-acento hover:underline"
+        >
+          ← Voltar para os cursos
+        </Link>
+      </main>
+    )
+  }
+
   if (!curso) notFound()
 
   return (

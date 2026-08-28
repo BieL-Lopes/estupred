@@ -98,7 +98,9 @@ const DUVIDAS = [
 ]
 
 export default async function Home() {
-  const cursos = await listarCursos()
+  // Se o catálogo não responder, a landing continua inteira: hero, como
+  // funciona, pilares, números e dúvidas não dependem do banco.
+  const { cursos, indisponivel } = await listarCursos()
   const destaques = cursos.filter((c) => c.destaque).slice(0, 3)
 
   return (
@@ -201,7 +203,9 @@ export default async function Home() {
 
           {destaques.length === 0 ? (
             <p className="mt-12 rounded-cartao border border-borda bg-cartao p-8 text-center text-texto-fraco">
-              Nenhum curso em destaque no momento.
+              {indisponivel
+                ? 'Não foi possível carregar os cursos agora. Tente novamente em instantes.'
+                : 'Nenhum curso em destaque no momento.'}
             </p>
           ) : (
             <div className="mt-12 grid gap-6 md:grid-cols-3">

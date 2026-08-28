@@ -44,6 +44,18 @@ export async function consultarPorCpf(
     return { ok: false, erro: 'CPF inválido. Confira os números digitados.' }
   }
 
+  try {
+    return await consultar(cpf)
+  } catch (erro) {
+    console.error('[consulta] falha ao consultar por CPF:', erro)
+    return {
+      ok: false,
+      erro: 'Não foi possível consultar agora. Tente novamente em instantes.',
+    }
+  }
+}
+
+async function consultar(cpf: string): Promise<ResultadoConsulta> {
   const supabase = criarClienteAdmin()
   const origem = await origemDaRequisicao()
   const umaHoraAtras = new Date(Date.now() - 60 * 60 * 1000).toISOString()

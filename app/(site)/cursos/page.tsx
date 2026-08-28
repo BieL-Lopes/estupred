@@ -11,7 +11,7 @@ export default async function Cursos({
   searchParams: Promise<{ uf?: string; categoria?: string; busca?: string }>
 }) {
   const filtro = await searchParams
-  const [cursos, categorias] = await Promise.all([
+  const [{ cursos, indisponivel }, categorias] = await Promise.all([
     listarCursos(filtro),
     listarCategorias(),
   ])
@@ -30,13 +30,25 @@ export default async function Cursos({
         </Suspense>
       </div>
 
-      <p className="mt-6 text-sm text-texto-fraco">
-        {cursos.length === 1
-          ? '1 curso encontrado'
-          : `${cursos.length} cursos encontrados`}
-      </p>
+      {!indisponivel && (
+        <p className="mt-6 text-sm text-texto-fraco">
+          {cursos.length === 1
+            ? '1 curso encontrado'
+            : `${cursos.length} cursos encontrados`}
+        </p>
+      )}
 
-      {cursos.length === 0 ? (
+      {indisponivel ? (
+        <div className="mt-8 rounded-cartao border border-aviso/30 bg-aviso-fundo p-10 text-center">
+          <p className="font-medium text-aviso">
+            Não foi possível carregar os cursos agora.
+          </p>
+          <p className="mt-2 text-sm text-texto-suave">
+            É uma instabilidade temporária, não um problema com a sua matrícula.
+            Tente novamente em alguns instantes.
+          </p>
+        </div>
+      ) : cursos.length === 0 ? (
         <p className="mt-8 rounded-cartao border border-borda bg-cartao p-10 text-center text-texto-fraco">
           Nenhum curso encontrado com esses filtros.
         </p>
