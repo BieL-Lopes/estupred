@@ -23,7 +23,7 @@ let unidadeId: string
 
 beforeAll(async () => {
   const { data: curso } = await admin
-    .from('cursos').select('id').eq('slug', 'eletricista-predial').single()
+    .from('cursos').select('id').eq('slug', 'formacao-para-eletricista').single()
   const { data: unidade } = await admin
     .from('unidades_prisionais').select('id').limit(1).single()
   cursoId = curso!.id

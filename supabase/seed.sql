@@ -6,6 +6,11 @@
 --
 -- NUNCA rode `supabase db reset --linked`: isso apagaria o banco de
 -- producao e criaria um admin com senha publicamente conhecida.
+--
+-- O catálogo (cursos) vem da migration 20260828000001_catalogo_portaria_vep.sql,
+-- que roda antes deste seed e aplica os 38 cursos do Anexo I da Portaria
+-- 10/2016-VEP/DF. Este arquivo NÃO cria cursos: só referencia os que já
+-- existem, por slug, para as matrículas de teste.
 
 -- Usuários de desenvolvimento. A senha é a mesma para os três.
 --
@@ -69,52 +74,12 @@ insert into unidades_prisionais (id, uf, nome, endereco, cep, responsavel_nucleo
    'Rodovia BR-153, km 5, Aparecida de Goiânia', '74936600',
    'Agente de Ensino', '6232010000');
 
-insert into cursos (id, slug, titulo, descricao, ementa, carga_horaria, preco_centavos, categoria, destaque) values
-  ('bbbbbbbb-0000-0000-0000-000000000001', 'eletricista-predial',
-   'Eletricista Predial',
-   'Instalações elétricas residenciais e prediais, da leitura de projeto à execução segura.',
-   E'## Módulos\n\n1. Fundamentos de eletricidade\n2. Leitura de projeto elétrico\n3. Dimensionamento de circuitos\n4. Instalação de quadros e disjuntores\n5. Segurança em eletricidade (NR-10)',
-   180, 18500, 'Construção Civil', true),
-  ('bbbbbbbb-0000-0000-0000-000000000002', 'pedreiro-alvenaria',
-   'Pedreiro de Alvenaria',
-   'Técnicas de alvenaria estrutural e de vedação, do assentamento ao acabamento.',
-   E'## Módulos\n\n1. Materiais e ferramentas\n2. Fundações rasas\n3. Assentamento de blocos\n4. Reboco e chapisco\n5. Controle de qualidade',
-   180, 18500, 'Construção Civil', true),
-  ('bbbbbbbb-0000-0000-0000-000000000003', 'panificacao',
-   'Panificação e Confeitaria',
-   'Produção de pães, bolos e doces em escala artesanal e comercial.',
-   E'## Módulos\n\n1. Higiene e manipulação de alimentos\n2. Massas e fermentação\n3. Pães salgados e doces\n4. Confeitaria básica\n5. Custos e precificação',
-   180, 18500, 'Alimentação', true),
-  ('bbbbbbbb-0000-0000-0000-000000000004', 'corte-e-costura',
-   'Corte e Costura',
-   'Modelagem, corte e costura de peças do vestuário em máquina reta e overloque.',
-   E'## Módulos\n\n1. Máquinas e ferramentas\n2. Tecidos e aviamentos\n3. Modelagem básica\n4. Costura de peças\n5. Acabamento e conserto',
-   180, 18500, 'Vestuário', false),
-  ('bbbbbbbb-0000-0000-0000-000000000005', 'informatica-basica',
-   'Informática Básica',
-   'Fundamentos de computador, editor de texto, planilha e internet.',
-   E'## Módulos\n\n1. Componentes do computador\n2. Sistema operacional\n3. Editor de texto\n4. Planilha eletrônica\n5. Internet e segurança',
-   120, 17500, 'Tecnologia', false),
-  ('bbbbbbbb-0000-0000-0000-000000000006', 'jardinagem-paisagismo',
-   'Jardinagem e Paisagismo',
-   'Cultivo, poda e manutenção de jardins residenciais e públicos.',
-   E'## Módulos\n\n1. Solo e adubação\n2. Espécies ornamentais\n3. Poda e condução\n4. Irrigação\n5. Projeto de canteiro',
-   90, 15500, 'Meio Ambiente', false),
-  ('bbbbbbbb-0000-0000-0000-000000000007', 'auxiliar-administrativo',
-   'Auxiliar Administrativo',
-   'Rotinas de escritório, arquivo, atendimento e noções de departamento pessoal.',
-   E'## Módulos\n\n1. Rotinas administrativas\n2. Arquivo e documentação\n3. Atendimento\n4. Noções de departamento pessoal\n5. Ética profissional',
-   180, 18500, 'Administração', false),
-  ('bbbbbbbb-0000-0000-0000-000000000008', 'mecanica-de-motos',
-   'Mecânica de Motocicletas',
-   'Manutenção preventiva e corretiva de motocicletas de baixa cilindrada.',
-   E'## Módulos\n\n1. Motor dois e quatro tempos\n2. Sistema de transmissão\n3. Freios e suspensão\n4. Sistema elétrico\n5. Diagnóstico de falhas',
-   240, 21000, 'Mecânica', false);
-
 -- Curso restrito a poucas UFs, para exercitar a disponibilidade por estado.
-insert into curso_ufs (curso_id, uf) values
-  ('bbbbbbbb-0000-0000-0000-000000000008', 'DF'),
-  ('bbbbbbbb-0000-0000-0000-000000000008', 'GO');
+-- Usa um curso real do Anexo I, não um slug inventado.
+insert into curso_ufs (curso_id, uf)
+select c.id, uf
+from cursos c, (values ('DF'), ('GO')) as restricao(uf)
+where c.slug = 'formacao-para-eletricista';
 
 -- Duas matrículas, uma por responsável, para o teste de isolamento.
 insert into internos (id, nome, cpf, matricula_prisional, unidade_prisional_id, responsavel_id, parentesco) values
@@ -125,15 +90,18 @@ insert into internos (id, nome, cpf, matricula_prisional, unidade_prisional_id, 
    'MP-2024-0002', 'aaaaaaaa-0000-0000-0000-000000000003',
    '33333333-3333-3333-3333-333333333333', 'Irmão');
 
-insert into matriculas (interno_id, curso_id, responsavel_id, unidade_prisional_id, preco_centavos, frete_centavos, status) values
-  ('cccccccc-0000-0000-0000-000000000001',
-   'bbbbbbbb-0000-0000-0000-000000000001',
-   '22222222-2222-2222-2222-222222222222',
-   'aaaaaaaa-0000-0000-0000-000000000001', 18500, 0, 'paga'),
-  ('cccccccc-0000-0000-0000-000000000002',
-   'bbbbbbbb-0000-0000-0000-000000000003',
-   '33333333-3333-3333-3333-333333333333',
-   'aaaaaaaa-0000-0000-0000-000000000003', 18500, 2800, 'material_enviado');
+insert into matriculas (interno_id, curso_id, responsavel_id, unidade_prisional_id, preco_centavos, frete_centavos, status)
+select
+  'cccccccc-0000-0000-0000-000000000001'::uuid, c.id,
+  '22222222-2222-2222-2222-222222222222'::uuid,
+  'aaaaaaaa-0000-0000-0000-000000000001'::uuid, c.preco_centavos, 0, 'paga'::status_matricula
+from cursos c where c.slug = 'formacao-para-eletricista'
+union all
+select
+  'cccccccc-0000-0000-0000-000000000002'::uuid, c.id,
+  '33333333-3333-3333-3333-333333333333'::uuid,
+  'aaaaaaaa-0000-0000-0000-000000000003'::uuid, c.preco_centavos, 2800, 'material_enviado'::status_matricula
+from cursos c where c.slug = 'auxiliar-de-cozinha';
 
 insert into matricula_eventos (matricula_id, de_status, para_status, nota)
 select m.id, 'aguardando_pagamento', 'paga', 'Semente de desenvolvimento'
