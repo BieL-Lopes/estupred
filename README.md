@@ -1,4 +1,4 @@
-# estupred
+# Clique Estudos
 
 Plataforma de cursos profissionalizantes para o sistema prisional brasileiro.
 A família matricula o interno online, acompanha cada etapa até o certificado, e
@@ -42,7 +42,7 @@ Criados pelo seed, senha `senha-de-teste` para os três:
 
 | E-mail | Papel |
 |---|---|
-| `admin@estupred.com.br` | admin |
+| `admin@cliqueestudos.com.br` | admin |
 | `ana@exemplo.com` | responsável |
 | `bruno@exemplo.com` | responsável |
 
@@ -140,5 +140,5 @@ implementar um adaptador real (Mercado Pago, Asaas ou outro) e apontar
 
 ## Documentação do projeto
 
-- Especificação: `docs/superpowers/specs/2026-08-27-estupred-vitrine-matricula-design.md`
-- Plano de implementação: `docs/superpowers/plans/2026-08-27-estupred-v1.md`
+- Especificação: `docs/superpowers/specs/2026-08-27-estupred-vitrine-matricula-design.md` (arquivo mantém o nome de quando o projeto se chamava "estupred")
+- Plano de implementação: `docs/superpowers/plans/2026-08-27-estupred-v1.md` (idem)

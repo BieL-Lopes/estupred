@@ -1,6 +1,6 @@
 import { FormularioConsulta } from './FormularioConsulta'
 
-export const metadata = { title: 'Consultar andamento — estupred' }
+export const metadata = { title: 'Consultar andamento — Clique Estudos' }
 
 export default function Consulta() {
   return (

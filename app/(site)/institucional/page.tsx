@@ -1,4 +1,4 @@
-export const metadata = { title: 'Instituição — estupred' }
+export const metadata = { title: 'Instituição — Clique Estudos' }
 
 export default function Institucional() {
   return (
@@ -10,7 +10,7 @@ export default function Institucional() {
           Quem emite os certificados
         </h2>
         <p className="mt-2 text-texto-suave">
-          Os certificados dos cursos do estupred são emitidos pela Faculdade
+          Os certificados dos cursos do Clique Estudos são emitidos pela Faculdade
           Guerra, instituição de ensino credenciada. Isso é o que dá validade ao
           documento perante a assessoria jurídica da unidade prisional.
         </p>

@@ -41,7 +41,7 @@ const ETAPAS = [
   },
 ]
 
-export const metadata = { title: 'Como funciona — estupred' }
+export const metadata = { title: 'Como funciona — Clique Estudos' }
 
 export default function ComoFunciona() {
   return (

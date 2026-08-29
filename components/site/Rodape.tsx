@@ -34,9 +34,9 @@ export function Rodape() {
         <div>
           <div className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-acento text-sm font-extrabold text-fundo">
-              e
+              C
             </span>
-            <span className="text-lg font-bold text-texto">estupred</span>
+            <span className="text-lg font-bold text-texto">Clique Estudos</span>
           </div>
           <p className="mt-4 text-sm leading-relaxed text-texto-fraco">
             Cursos profissionalizantes para o sistema prisional brasileiro, com
@@ -61,7 +61,7 @@ export function Rodape() {
       </div>
 
       <p className="border-t border-borda py-6 text-center text-xs text-texto-fraco">
-        © {new Date().getFullYear()} estupred. Todos os direitos reservados.
+        © {new Date().getFullYear()} Clique Estudos. Todos os direitos reservados.
       </p>
     </footer>
   )

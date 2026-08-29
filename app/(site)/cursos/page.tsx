@@ -3,7 +3,7 @@ import { CartaoCurso } from '@/components/site/CartaoCurso'
 import { FiltroCatalogo } from '@/components/site/FiltroCatalogo'
 import { listarCategorias, listarCursos } from '@/lib/catalogo'
 
-export const metadata = { title: 'Cursos — estupred' }
+export const metadata = { title: 'Cursos — Clique Estudos' }
 
 export default async function Cursos({
   searchParams,

@@ -9,7 +9,7 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-  title: 'estupred — Cursos profissionalizantes para o sistema prisional',
+  title: 'Clique Estudos — Cursos profissionalizantes para o sistema prisional',
   description:
     'Cursos profissionalizantes com certificado emitido por instituição credenciada. A família matricula online em minutos e acompanha cada etapa até o certificado.',
 }

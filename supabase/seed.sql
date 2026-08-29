@@ -22,7 +22,7 @@ insert into auth.users (
 values
   ('11111111-1111-1111-1111-111111111111',
    '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-   'admin@estupred.com.br', crypt('senha-de-teste', gen_salt('bf')), now(),
+   'admin@cliqueestudos.com.br', crypt('senha-de-teste', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}',
    '{"nome":"Administração","cpf":"52998224725","telefone":"61999999999"}',
    '', '', '', '',

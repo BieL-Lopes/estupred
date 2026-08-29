@@ -220,7 +220,7 @@ export default async function Home() {
       {/* Instituição --------------------------------------------------- */}
       <section id="instituicao" className="mx-auto max-w-6xl px-6 py-20">
         <h2 className="text-3xl font-bold text-texto">
-          Por que o estupred
+          Por que o Clique Estudos
         </h2>
         <p className="mt-3 max-w-2xl text-texto-fraco">
           Três coisas que a família precisa ter certeza antes de pagar.

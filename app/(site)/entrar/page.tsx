@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { FormularioLogin } from './FormularioLogin'
 
-export const metadata = { title: 'Entrar — estupred' }
+export const metadata = { title: 'Entrar — Clique Estudos' }
 
 export default function Entrar() {
   return (

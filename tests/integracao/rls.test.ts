@@ -65,7 +65,7 @@ describe('escrita de catálogo', () => {
   })
 
   it('deixa admin criar curso', async () => {
-    const c = await clienteAutenticado('admin@estupred.com.br', 'senha-de-teste')
+    const c = await clienteAutenticado('admin@cliqueestudos.com.br', 'senha-de-teste')
     const { error } = await c.from('cursos').insert({
       slug: 'curso-do-admin', titulo: 'Admin', descricao: 'x', ementa: 'x',
       carga_horaria: 60, preco_centavos: 13500, categoria: 'x',
@@ -110,7 +110,7 @@ describe('isolamento entre responsáveis', () => {
   })
 
   it('deixa o admin ver todas as matrículas', async () => {
-    const c = await clienteAutenticado('admin@estupred.com.br', 'senha-de-teste')
+    const c = await clienteAutenticado('admin@cliqueestudos.com.br', 'senha-de-teste')
     const { data, error } = await c.from('matriculas').select('codigo')
     expect(error).toBeNull()
     expect(data!.length).toBeGreaterThanOrEqual(2)
@@ -123,7 +123,7 @@ describe('isolamento entre responsáveis', () => {
 // afetada e o dado intacto", não "retornou erro".
 describe('matricula_eventos é append-only', () => {
   it('impede update mesmo para o admin', async () => {
-    const c = await clienteAutenticado('admin@estupred.com.br', 'senha-de-teste')
+    const c = await clienteAutenticado('admin@cliqueestudos.com.br', 'senha-de-teste')
     const { data: antes } = await admin
       .from('matricula_eventos').select('id, nota').limit(1).single()
 
@@ -141,7 +141,7 @@ describe('matricula_eventos é append-only', () => {
   })
 
   it('impede delete mesmo para o admin', async () => {
-    const c = await clienteAutenticado('admin@estupred.com.br', 'senha-de-teste')
+    const c = await clienteAutenticado('admin@cliqueestudos.com.br', 'senha-de-teste')
     const { data: antes } = await admin
       .from('matricula_eventos').select('id').limit(1).single()
 

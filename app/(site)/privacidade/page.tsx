@@ -1,11 +1,11 @@
-export const metadata = { title: 'Política de Privacidade — estupred' }
+export const metadata = { title: 'Política de Privacidade — Clique Estudos' }
 
 export default function Privacidade() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
       <h1 className="text-3xl font-bold text-texto">Política de Privacidade</h1>
       <p className="mt-3 text-texto-suave">
-        Esta política descreve como o estupred trata dados pessoais, conforme a
+        Esta política descreve como o Clique Estudos trata dados pessoais, conforme a
         Lei Geral de Proteção de Dados (Lei 13.709/2018).
       </p>
 

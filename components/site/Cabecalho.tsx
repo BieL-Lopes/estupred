@@ -17,10 +17,10 @@ export async function Cabecalho() {
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
         <Link href="/" className="flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-acento text-sm font-extrabold text-fundo">
-            e
+            C
           </span>
           <span className="text-lg font-bold tracking-tight text-texto">
-            estupred
+            Clique Estudos
           </span>
         </Link>
 
