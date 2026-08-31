@@ -53,6 +53,13 @@ describe('EsquemaInterno', () => {
     if (r.success) expect(r.data.rg).toBeUndefined()
   })
 
+  it('aceita RG vazio — um form sempre manda o campo, mesmo em branco', () => {
+    // Achado testando o wizard de verdade no navegador: FormData sempre
+    // inclui o input, então "opcional" precisa aceitar '', não só ausência.
+    const r = EsquemaInterno.safeParse({ ...base, rg: '' })
+    expect(r.success).toBe(true)
+  })
+
   it('rejeita CPF com dígito verificador errado', () => {
     const r = EsquemaInterno.safeParse({ ...base, cpf: '529.982.247-24' })
     expect(r.success).toBe(false)

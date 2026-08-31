@@ -30,7 +30,7 @@ export const EsquemaInterno = z.object({
   // Opcional: nem toda família tem o RG do interno em mãos na hora da
   // matrícula. O documento do cliente pede o campo, mas travar o checkout
   // por isso reduziria a conversão sem necessidade.
-  rg: z.string().trim().min(1).optional(),
+  rg: z.string().trim().min(1).optional().or(z.literal('')),
   dataNascimento: z.string().date().optional().or(z.literal('')),
 })
 
