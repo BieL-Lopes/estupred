@@ -27,14 +27,7 @@ export default function EntrarEquipe() {
           aria-hidden
           className="pointer-events-none absolute -left-32 top-1/4 h-96 w-96 rounded-full bg-acento/10 blur-3xl"
         />
-        <div className="relative flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-acento text-base font-extrabold text-fundo">
-            C
-          </span>
-          <span className="text-xl font-bold text-texto">Clique Estudos</span>
-        </div>
-
-        <h1 className="relative mt-10 max-w-md text-4xl font-extrabold leading-tight text-texto">
+        <h1 className="relative max-w-md text-4xl font-extrabold leading-tight text-texto">
           Sistema de Gestão Educacional
         </h1>
         <p className="relative mt-4 max-w-sm text-texto-suave">
@@ -54,16 +47,7 @@ export default function EntrarEquipe() {
       {/* Coluna do formulário */}
       <div className="flex w-full flex-col justify-center px-6 py-16 md:w-1/2 md:px-16">
         <div className="mx-auto w-full max-w-sm">
-          <div className="flex items-center gap-2 md:hidden">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-acento text-sm font-extrabold text-fundo">
-              C
-            </span>
-            <span className="text-lg font-bold text-texto">Clique Estudos</span>
-          </div>
-
-          <h2 className="mt-8 text-2xl font-bold text-texto md:mt-0">
-            Bem-vindo de volta
-          </h2>
+          <h2 className="text-2xl font-bold text-texto">Bem-vindo de volta</h2>
           <p className="mt-1 text-texto-fraco">
             Faça login para acessar o sistema.
           </p>
