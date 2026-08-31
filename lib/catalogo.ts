@@ -1,4 +1,4 @@
-import { criarClienteServidor } from '@/lib/supabase/server'
+import { criarClientePublico } from '@/lib/supabase/publico'
 
 export type CursoResumo = {
   id: string
@@ -61,7 +61,7 @@ export async function listarCursos(filtro?: {
   busca?: string
 }): Promise<ListaDeCursos> {
   try {
-    const supabase = await criarClienteServidor()
+    const supabase = criarClientePublico()
 
     let consulta = supabase
       .from('cursos')
@@ -95,7 +95,7 @@ export async function listarCursos(filtro?: {
 
 export async function obterCurso(slug: string): Promise<BuscaDeCurso> {
   try {
-    const supabase = await criarClienteServidor()
+    const supabase = criarClientePublico()
 
     const { data, error } = await supabase
       .from('cursos')
@@ -127,7 +127,7 @@ export async function obterCurso(slug: string): Promise<BuscaDeCurso> {
 
 export async function listarCategorias(): Promise<string[]> {
   try {
-    const supabase = await criarClienteServidor()
+    const supabase = criarClientePublico()
     const { data, error } = await supabase
       .from('cursos')
       .select('categoria')
