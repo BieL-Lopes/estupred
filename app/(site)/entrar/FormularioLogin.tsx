@@ -2,16 +2,14 @@
 
 import { useActionState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { entrar, type EstadoLogin } from './acoes'
+import { entrarPorCpf, type EstadoLogin } from './acoes'
 
 export function FormularioLogin() {
   const parametros = useSearchParams()
   const [estado, acao, pendente] = useActionState<EstadoLogin, FormData>(
-    entrar,
+    entrarPorCpf,
     {},
   )
-
-  const campo = 'mt-1 w-full rounded-lg border border-borda bg-cartao px-3 py-2.5 text-texto'
 
   return (
     <form action={acao} className="mt-8 space-y-4">
@@ -22,24 +20,15 @@ export function FormularioLogin() {
       />
 
       <label className="block">
-        <span className="text-sm font-medium">E-mail</span>
+        <span className="text-sm font-medium">CPF do responsável</span>
         <input
-          name="email"
-          type="email"
+          name="cpf"
+          inputMode="numeric"
           required
-          autoComplete="email"
-          className={campo}
-        />
-      </label>
-
-      <label className="block">
-        <span className="text-sm font-medium">Senha</span>
-        <input
-          name="senha"
-          type="password"
-          required
-          autoComplete="current-password"
-          className={campo}
+          autoComplete="off"
+          autoFocus
+          placeholder="000.000.000-00"
+          className="mt-1 w-full rounded-lg border border-borda bg-cartao px-3 py-2.5 text-texto placeholder:text-texto-fraco"
         />
       </label>
 

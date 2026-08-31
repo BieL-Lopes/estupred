@@ -23,6 +23,7 @@ const COLUNAS = [
     itens: [
       { href: '/entrar', rotulo: 'Área do Aluno' },
       { href: '/cursos', rotulo: 'Fazer matrícula' },
+      { href: '/entrar-equipe', rotulo: 'Acesso da equipe' },
     ],
   },
 ]

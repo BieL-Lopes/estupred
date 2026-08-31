@@ -1,42 +1,40 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { autenticarPorCpf } from '@/lib/auth-cpf'
 import { criarClienteServidor } from '@/lib/supabase/server'
-
-const Entrada = z.object({
-  email: z.string().email('E-mail inválido'),
-  senha: z.string().min(6, 'A senha precisa de ao menos 6 caracteres'),
-  proximo: z.string().optional(),
-})
 
 export type EstadoLogin = { erro?: string }
 
-export async function entrar(
+async function origemDaRequisicao(): Promise<string> {
+  const h = await headers()
+  const encaminhado = h.get('x-forwarded-for')
+  return (encaminhado?.split(',')[0] ?? h.get('x-real-ip') ?? 'desconhecida').trim()
+}
+
+// Só caminho relativo começando por uma barra: evita open-redirect via um
+// valor de "proximo" forjado (ex.: "//evil.com" ou uma URL absoluta).
+const ProximoValido = z
+  .string()
+  .regex(/^\/[a-zA-Z0-9/_-]*$/)
+  .optional()
+
+export async function entrarPorCpf(
   _anterior: EstadoLogin,
   formData: FormData,
 ): Promise<EstadoLogin> {
-  const analise = Entrada.safeParse({
-    email: formData.get('email'),
-    senha: formData.get('senha'),
-    proximo: formData.get('proximo') ?? undefined,
-  })
+  const origem = await origemDaRequisicao()
+  const resultado = await autenticarPorCpf(
+    String(formData.get('cpf') ?? ''),
+    origem,
+  )
 
-  if (!analise.success) {
-    return { erro: analise.error.issues[0]!.message }
-  }
+  if (!resultado.ok) return { erro: resultado.erro }
 
-  const supabase = await criarClienteServidor()
-  const { error } = await supabase.auth.signInWithPassword({
-    email: analise.data.email,
-    password: analise.data.senha,
-  })
-
-  // Mensagem genérica de propósito: distinguir "e-mail não existe" de "senha
-  // errada" entrega uma lista de clientes a quem quiser enumerar.
-  if (error) return { erro: 'E-mail ou senha incorretos' }
-
-  redirect(analise.data.proximo || '/aluno')
+  const proximo = ProximoValido.safeParse(formData.get('proximo') || undefined)
+  redirect(proximo.success && proximo.data ? proximo.data : '/aluno')
 }
 
 export async function sair() {

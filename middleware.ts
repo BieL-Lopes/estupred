@@ -3,9 +3,14 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 const ROTAS_PROTEGIDAS = ['/aluno', '/admin']
 
+// /admin usa e-mail e senha (equipe interna); /aluno usa CPF (responsável).
+function destinoDeLogin(caminho: string): string {
+  return caminho.startsWith('/admin') ? '/entrar-equipe' : '/entrar'
+}
+
 function paraLogin(request: NextRequest, caminho: string) {
   const destino = request.nextUrl.clone()
-  destino.pathname = '/entrar'
+  destino.pathname = destinoDeLogin(caminho)
   destino.searchParams.set('proximo', caminho)
   return NextResponse.redirect(destino)
 }
