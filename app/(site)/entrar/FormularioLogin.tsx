@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { entrarPorCpf, type EstadoLogin } from './acoes'
 
 export function FormularioLogin() {
@@ -28,12 +29,12 @@ export function FormularioLogin() {
           autoComplete="off"
           autoFocus
           placeholder="000.000.000-00"
-          className="mt-1 w-full rounded-lg border border-borda bg-cartao px-3 py-2.5 text-texto placeholder:text-texto-fraco"
+          className="mt-1 w-full rounded-lg border border-borda bg-fundo px-3 py-2.5 text-texto placeholder:text-texto-fraco"
         />
       </label>
 
       {estado.erro && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-red-400">
           {estado.erro}
         </p>
       )}
@@ -41,10 +42,17 @@ export function FormularioLogin() {
       <button
         type="submit"
         disabled={pendente}
-        className="w-full rounded-lg bg-acento px-4 py-3 font-semibold text-fundo disabled:opacity-60"
+        className="w-full rounded-lg bg-acento px-4 py-3 font-semibold text-fundo transition hover:bg-acento-claro disabled:opacity-60"
       >
         {pendente ? 'Entrando…' : 'Entrar'}
       </button>
+
+      <Link
+        href="/entrar-equipe"
+        className="flex w-full items-center justify-center rounded-lg border border-borda-forte px-4 py-3 font-semibold text-texto transition hover:bg-cartao-2"
+      >
+        Acesso da equipe
+      </Link>
     </form>
   )
 }
