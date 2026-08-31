@@ -1,31 +1,31 @@
 import 'server-only'
 import { cpfValido, normalizarCpf } from '@/lib/dominio/cpf'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
-import { criarClienteServidor } from '@/lib/supabase/server'
 
 const LIMITE_POR_HORA = 12
 
-export type ResultadoLoginCpf = { ok: true } | { ok: false; erro: string }
+export type LoginCpfPreparado =
+  | { ok: true; email: string }
+  | { ok: false; erro: string }
 
 /**
- * Autentica o responsável pelo CPF, sem senha — pedido do cliente,
- * espelhando a referência A Clique Fácil, que não tem conta nenhuma para a
- * família.
+ * Valida o CPF, aplica o limite de tentativas e localiza a conta do
+ * responsável correspondente — sem tocar em sessão.
  *
- * Por trás dos panos ainda existe uma sessão Supabase real, mintada via
- * admin.generateLink + verifyOtp (o mesmo mecanismo de um link mágico de
- * "esqueci minha senha", só que sem o e-mail de verdade sair). Isso
- * significa que toda a RLS baseada em auth.uid() continua funcionando sem
- * nenhuma mudança nas policies.
+ * Fica deliberadamente separado da parte que grava a sessão (generateLink +
+ * verifyOtp, em app/(site)/entrar/acoes.ts): gravar sessão exige cookies()
+ * do Next, que só existe dentro de uma Server Action de verdade. Separar
+ * também é o que torna esta função testável fora do runtime de requisição
+ * do Next — os testes chamam prepararLoginPorCpf diretamente, sem precisar
+ * simular uma requisição inteira.
  *
- * Não chama redirect(): quem decide para onde ir é o chamador. Isso também
- * deixa esta função testável diretamente, sem depender do runtime de
- * requisição do Next (headers(), redirect()).
+ * Só responsável entra por CPF. Sem o filtro de role, quem soubesse o CPF
+ * de um administrador entraria como admin, sem senha nenhuma.
  */
-export async function autenticarPorCpf(
+export async function prepararLoginPorCpf(
   cpfBruto: string,
   origem: string,
-): Promise<ResultadoLoginCpf> {
+): Promise<LoginCpfPreparado> {
   const cpf = normalizarCpf(cpfBruto)
 
   if (!cpfValido(cpf)) {
@@ -48,8 +48,6 @@ export async function autenticarPorCpf(
     }
   }
 
-  // Só responsável entra por CPF. Sem este filtro, quem soubesse o CPF de
-  // um administrador entraria como admin, sem senha nenhuma.
   const { data: perfil } = await admin
     .from('profiles')
     .select('email')
@@ -72,30 +70,5 @@ export async function autenticarPorCpf(
     }
   }
 
-  const { data: link, error: erroLink } = await admin.auth.admin.generateLink({
-    type: 'magiclink',
-    email: perfil.email,
-  })
-
-  if (erroLink || !link.properties?.hashed_token) {
-    return {
-      ok: false,
-      erro: 'Não foi possível entrar agora. Tente novamente em instantes.',
-    }
-  }
-
-  const supabase = await criarClienteServidor()
-  const { error: erroSessao } = await supabase.auth.verifyOtp({
-    type: 'magiclink',
-    token_hash: link.properties.hashed_token,
-  })
-
-  if (erroSessao) {
-    return {
-      ok: false,
-      erro: 'Não foi possível entrar agora. Tente novamente em instantes.',
-    }
-  }
-
-  return { ok: true }
+  return { ok: true, email: perfil.email }
 }

@@ -5,12 +5,21 @@ import type { Database } from '@/lib/supabase/tipos'
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
+// profiles.cpf é único (migration 20260830000002), então cada teste que faz
+// signUp precisa de um CPF que não colida com nenhum outro — nem com o do
+// seed, nem entre si. A checagem de dígito verificador é só no app (Zod);
+// a coluna só exige 11 dígitos, então gerar algo único aqui é suficiente.
+function cpfUnicoParaTeste(): string {
+  return `${Date.now()}${Math.floor(Math.random() * 90 + 10)}`.slice(-11)
+}
+
 describe('cadastro', () => {
   it('cria o profile automaticamente com os metadados', async () => {
     const c = createClient<Database>(url, anon, {
       auth: { persistSession: false },
     })
     const email = `novo-${Date.now()}@exemplo.com`
+    const cpf = cpfUnicoParaTeste()
 
     const { data, error } = await c.auth.signUp({
       email,
@@ -18,7 +27,7 @@ describe('cadastro', () => {
       options: {
         data: {
           nome: 'Carla Dias',
-          cpf: '52998224725',
+          cpf,
           telefone: '61966666666',
         },
       },
@@ -32,7 +41,7 @@ describe('cadastro', () => {
       .single()
 
     expect(perfil!.nome).toBe('Carla Dias')
-    expect(perfil!.cpf).toBe('52998224725')
+    expect(perfil!.cpf).toBe(cpf)
     expect(perfil!.role).toBe('responsavel')
   })
 
@@ -50,7 +59,7 @@ describe('cadastro', () => {
       options: {
         data: {
           nome: 'Tentativa',
-          cpf: '52998224725',
+          cpf: cpfUnicoParaTeste(),
           telefone: '61955555555',
           role: 'admin',
         },
