@@ -39,7 +39,7 @@ export default async function DetalheCurso({
     <main className="mx-auto max-w-4xl px-6 py-16">
       <Link
         href="/cursos"
-        className="text-sm text-texto-fraco hover:text-acento"
+        className="text-sm text-texto-fraco transition-colors hover:text-acento"
       >
         ← Todos os cursos
       </Link>

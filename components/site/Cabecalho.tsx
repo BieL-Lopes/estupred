@@ -1,13 +1,6 @@
 import Link from 'next/link'
 import { usuarioAtual } from '@/lib/auth'
-
-const LINKS = [
-  { href: '/#como-funciona', rotulo: 'Como funciona' },
-  { href: '/cursos', rotulo: 'Cursos' },
-  { href: '/#instituicao', rotulo: 'Instituição' },
-  { href: '/consulta', rotulo: 'Consultar CPF' },
-  { href: '/#duvidas', rotulo: 'Dúvidas' },
-]
+import { LinksNav } from './LinksNav'
 
 export async function Cabecalho() {
   const perfil = await usuarioAtual()
@@ -24,13 +17,7 @@ export async function Cabecalho() {
           </span>
         </Link>
 
-        <div className="hidden items-center gap-7 text-sm font-medium text-texto-suave md:flex">
-          {LINKS.map((l) => (
-            <Link key={l.href} href={l.href} className="hover:text-acento">
-              {l.rotulo}
-            </Link>
-          ))}
-        </div>
+        <LinksNav />
 
         <Link
           href={perfil ? '/aluno' : '/entrar'}

@@ -32,6 +32,9 @@
 
 html {
   scroll-behavior: smooth;
+  /* O cabeçalho é sticky (~64px). Sem isso, pular para uma âncora (#duvidas
+     etc.) deixa o título escondido atrás dele. */
+  scroll-padding-top: 5rem;
 }
 
 body {

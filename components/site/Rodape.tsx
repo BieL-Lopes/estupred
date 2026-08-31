@@ -50,7 +50,10 @@ export function Rodape() {
             <ul className="mt-4 space-y-2.5 text-texto-fraco">
               {coluna.itens.map((item) => (
                 <li key={item.href + item.rotulo}>
-                  <Link href={item.href} className="hover:text-acento">
+                  <Link
+                    href={item.href}
+                    className="transition-colors hover:text-acento"
+                  >
                     {item.rotulo}
                   </Link>
                 </li>
