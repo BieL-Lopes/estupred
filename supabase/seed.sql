@@ -70,17 +70,17 @@ insert into fretes (uf, valor_centavos, prazo_dias) values
   ('SE', 3800, 12), ('PI', 4200, 14), ('TO', 3800, 12), ('RO', 4800, 18),
   ('AC', 5200, 20), ('AP', 5200, 20), ('RR', 5200, 20);
 
-insert into unidades_prisionais (id, uf, nome, endereco, cep, responsavel_nucleo, telefone) values
+insert into unidades_prisionais (id, uf, nome, regiao, endereco, cep, responsavel_nucleo, telefone) values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'DF',
-   'Penitenciária do Distrito Federal I',
+   'Penitenciária do Distrito Federal I', 'Papuda',
    'Rodovia DF-465, s/n, São Sebastião', '71693000',
    'Chefe do Núcleo de Ensino', '6133060000'),
   ('aaaaaaaa-0000-0000-0000-000000000002', 'DF',
-   'Centro de Detenção Provisória',
+   'Centro de Detenção Provisória', 'Papuda',
    'Rodovia DF-465, s/n, São Sebastião', '71693000',
    'Chefe do Núcleo de Ensino', '6133060001'),
   ('aaaaaaaa-0000-0000-0000-000000000003', 'GO',
-   'Complexo Prisional de Aparecida de Goiânia',
+   'Complexo Prisional de Aparecida de Goiânia', null,
    'Rodovia BR-153, km 5, Aparecida de Goiânia', '74936600',
    'Agente de Ensino', '6232010000');
 

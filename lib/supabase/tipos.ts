@@ -444,6 +444,7 @@ export type Database = {
           endereco: string
           id: string
           nome: string
+          regiao: string | null
           responsavel_nucleo: string | null
           telefone: string | null
           uf: string
@@ -455,6 +456,7 @@ export type Database = {
           endereco: string
           id?: string
           nome: string
+          regiao?: string | null
           responsavel_nucleo?: string | null
           telefone?: string | null
           uf: string
@@ -466,6 +468,7 @@ export type Database = {
           endereco?: string
           id?: string
           nome?: string
+          regiao?: string | null
           responsavel_nucleo?: string | null
           telefone?: string | null
           uf?: string
@@ -478,6 +481,7 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      is_equipe: { Args: never; Returns: boolean }
     }
     Enums: {
       metodo_pagamento: "pix" | "boleto" | "cartao" | "manual"
