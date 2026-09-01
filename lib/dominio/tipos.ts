@@ -20,7 +20,7 @@ export const STATUS_MATRICULA = [
 
 export type StatusMatricula = (typeof STATUS_MATRICULA)[number]
 
-export type MetodoPagamento = 'pix' | 'boleto' | 'cartao'
+export type MetodoPagamento = 'pix' | 'boleto' | 'cartao' | 'manual'
 
 export type StatusPagamento =
   | 'pendente'

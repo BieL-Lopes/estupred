@@ -480,8 +480,8 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
-      metodo_pagamento: "pix" | "boleto" | "cartao"
-      papel_usuario: "responsavel" | "admin"
+      metodo_pagamento: "pix" | "boleto" | "cartao" | "manual"
+      papel_usuario: "responsavel" | "admin" | "colaborador"
       status_matricula:
         | "rascunho"
         | "aguardando_pagamento"
@@ -628,8 +628,8 @@ export const Constants = {
   },
   public: {
     Enums: {
-      metodo_pagamento: ["pix", "boleto", "cartao"],
-      papel_usuario: ["responsavel", "admin"],
+      metodo_pagamento: ["pix", "boleto", "cartao", "manual"],
+      papel_usuario: ["responsavel", "admin", "colaborador"],
       status_matricula: [
         "rascunho",
         "aguardando_pagamento",
