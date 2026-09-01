@@ -1,10 +1,14 @@
 import Link from 'next/link'
 import { sair } from '@/app/(site)/entrar/acoes'
-import { exigirAdmin } from '@/lib/auth'
+import { exigirEquipe } from '@/lib/auth'
 
-const LINKS = [
+const LINKS_EQUIPE = [
   { href: '/admin', rotulo: 'Painel' },
+  { href: '/admin/alunos', rotulo: 'Alunos' },
   { href: '/admin/matriculas', rotulo: 'Matrículas' },
+]
+
+const LINKS_ADMIN = [
   { href: '/admin/cursos', rotulo: 'Cursos' },
   { href: '/admin/unidades', rotulo: 'Unidades' },
   { href: '/admin/fretes', rotulo: 'Fretes' },
@@ -15,7 +19,9 @@ export default async function LayoutAdmin({
 }: {
   children: React.ReactNode
 }) {
-  await exigirAdmin()
+  const perfil = await exigirEquipe()
+  const links =
+    perfil.role === 'admin' ? [...LINKS_EQUIPE, ...LINKS_ADMIN] : LINKS_EQUIPE
 
   return (
     <div className="min-h-screen bg-fundo">
@@ -31,7 +37,7 @@ export default async function LayoutAdmin({
           </Link>
 
           <nav className="flex flex-wrap gap-4 text-sm">
-            {LINKS.map((l) => (
+            {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}

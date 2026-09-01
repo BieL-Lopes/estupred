@@ -2,14 +2,14 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { exigirAdmin } from '@/lib/auth'
+import { exigirAdmin, exigirEquipe } from '@/lib/auth'
 import { STATUS_MATRICULA, UFS } from '@/lib/dominio/tipos'
 import { avancarStatus } from '@/lib/matricula/avancar'
 import { obterGateway } from '@/lib/pagamento'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
 
 export async function mudarStatus(formData: FormData) {
-  const perfil = await exigirAdmin()
+  const perfil = await exigirEquipe()
 
   const entrada = z
     .object({
@@ -156,7 +156,7 @@ export async function salvarFrete(formData: FormData) {
 }
 
 export async function reconciliarPagamento(formData: FormData) {
-  await exigirAdmin()
+  await exigirEquipe()
 
   const ref = z.string().min(1).parse(formData.get('gatewayRef'))
   const gateway = obterGateway()

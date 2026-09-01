@@ -6,7 +6,7 @@ export type Perfil = {
   nome: string
   email: string
   telefone: string
-  role: 'responsavel' | 'admin'
+  role: 'responsavel' | 'admin' | 'colaborador'
 }
 
 /**
@@ -51,5 +51,12 @@ export async function exigirUsuario(): Promise<Perfil> {
 export async function exigirAdmin(): Promise<Perfil> {
   const perfil = await exigirUsuario()
   if (perfil.role !== 'admin') redirect('/')
+  return perfil
+}
+
+/** Admin ou colaborador: o alcance comum de Alunos e Matrículas. */
+export async function exigirEquipe(): Promise<Perfil> {
+  const perfil = await exigirUsuario()
+  if (perfil.role !== 'admin' && perfil.role !== 'colaborador') redirect('/')
   return perfil
 }

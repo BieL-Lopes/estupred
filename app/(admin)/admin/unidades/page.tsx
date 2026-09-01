@@ -1,9 +1,12 @@
 import { FormularioUnidade } from '@/components/admin/FormularioUnidade'
+import { exigirAdmin } from '@/lib/auth'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
 
 export const metadata = { title: 'Unidades — Clique Estudos' }
 
 export default async function UnidadesAdmin() {
+  await exigirAdmin()
+
   const supabase = criarClienteAdmin()
   const { data: unidades } = await supabase
     .from('unidades_prisionais')

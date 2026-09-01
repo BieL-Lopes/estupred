@@ -1,4 +1,5 @@
 import { salvarFrete } from '@/lib/admin/acoes'
+import { exigirAdmin } from '@/lib/auth'
 import { formatarBRL } from '@/lib/dominio/precos'
 import { UFS } from '@/lib/dominio/tipos'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
@@ -6,6 +7,8 @@ import { criarClienteAdmin } from '@/lib/supabase/admin'
 export const metadata = { title: 'Fretes — Clique Estudos' }
 
 export default async function Fretes() {
+  await exigirAdmin()
+
   const supabase = criarClienteAdmin()
   const { data } = await supabase.from('fretes').select('*').order('uf')
   const porUf = new Map((data ?? []).map((f) => [f.uf, f]))

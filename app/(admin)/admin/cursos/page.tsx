@@ -1,10 +1,13 @@
 import { FormularioCurso } from '@/components/admin/FormularioCurso'
+import { exigirAdmin } from '@/lib/auth'
 import { formatarBRL } from '@/lib/dominio/precos'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
 
 export const metadata = { title: 'Cursos — Clique Estudos' }
 
 export default async function CursosAdmin() {
+  await exigirAdmin()
+
   const supabase = criarClienteAdmin()
   const { data: cursos } = await supabase.from('cursos').select('*').order('titulo')
 
