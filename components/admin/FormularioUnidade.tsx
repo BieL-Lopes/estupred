@@ -5,6 +5,7 @@ type Unidade = {
   id: string
   uf: string
   nome: string
+  regiao: string | null
   endereco: string
   cep: string
   responsavel_nucleo: string | null
@@ -36,6 +37,16 @@ export function FormularioUnidade({ unidade }: { unidade?: Unidade }) {
         <label className="block">
           <span className="text-sm font-medium text-texto">Nome da unidade</span>
           <input name="nome" defaultValue={unidade?.nome} className={campo} required />
+        </label>
+
+        <label className="block">
+          <span className="text-sm font-medium text-texto">Região</span>
+          <input
+            name="regiao"
+            defaultValue={unidade?.regiao ?? ''}
+            placeholder="Ex.: Papuda, Gama, SIA"
+            className={campo}
+          />
         </label>
 
         <label className="block sm:col-span-2">

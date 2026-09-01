@@ -86,6 +86,7 @@ const EsquemaUnidadeAdmin = z.object({
   id: z.string().uuid().optional(),
   uf: z.enum(UFS),
   nome: z.string().trim().min(3),
+  regiao: z.string().trim().optional(),
   endereco: z.string().trim().min(5),
   cep: z
     .string()
@@ -103,6 +104,7 @@ export async function salvarUnidade(formData: FormData) {
     id: formData.get('id') || undefined,
     uf: formData.get('uf'),
     nome: formData.get('nome'),
+    regiao: formData.get('regiao') || undefined,
     endereco: formData.get('endereco'),
     cep: formData.get('cep'),
     responsavelNucleo: formData.get('responsavelNucleo') || undefined,
@@ -113,6 +115,7 @@ export async function salvarUnidade(formData: FormData) {
   const linha = {
     uf: d.uf,
     nome: d.nome,
+    regiao: d.regiao ?? null,
     endereco: d.endereco,
     cep: d.cep,
     responsavel_nucleo: d.responsavelNucleo ?? null,
