@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { sair } from '@/app/(site)/entrar/acoes'
+import { NavAdmin } from '@/components/admin/NavAdmin'
 import { exigirEquipe } from '@/lib/auth'
 
 const LINKS_EQUIPE = [
@@ -36,17 +37,7 @@ export default async function LayoutAdmin({
             </span>
           </Link>
 
-          <nav className="flex flex-wrap gap-4 text-sm">
-            {links.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="text-texto-suave transition-colors hover:text-acento"
-              >
-                {l.rotulo}
-              </Link>
-            ))}
-          </nav>
+          <NavAdmin links={links} />
 
           <form action={sair} className="ml-auto">
             <button
