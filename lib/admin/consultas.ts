@@ -5,34 +5,34 @@ import { criarClienteAdmin } from '@/lib/supabase/admin'
 export async function resumoDoPainel() {
   const supabase = criarClienteAdmin()
 
-  const { data: matriculas } = await supabase
-    .from('matriculas')
-    .select('status')
-
   const inicioDoMes = new Date()
   inicioDoMes.setDate(1)
   inicioDoMes.setHours(0, 0, 0, 0)
+
+  // As três consultas não dependem uma da outra — rodar em série só somava
+  // latência de rede à toa.
+  const [{ data: matriculas }, { data: pagos }, { count }] = await Promise.all([
+    supabase.from('matriculas').select('status'),
+    supabase
+      .from('pagamentos')
+      .select('valor_centavos')
+      .eq('status', 'pago')
+      .gte('pago_em', inicioDoMes.toISOString()),
+    supabase
+      .from('pagamentos')
+      .select('id', { count: 'exact', head: true })
+      .is('matricula_id', null),
+  ])
 
   const porStatus: Record<string, number> = {}
   for (const m of matriculas ?? []) {
     porStatus[m.status] = (porStatus[m.status] ?? 0) + 1
   }
 
-  const { data: pagos } = await supabase
-    .from('pagamentos')
-    .select('valor_centavos')
-    .eq('status', 'pago')
-    .gte('pago_em', inicioDoMes.toISOString())
-
   const receitaMesCentavos = (pagos ?? []).reduce(
     (soma, p) => soma + p.valor_centavos,
     0,
   )
-
-  const { count } = await supabase
-    .from('pagamentos')
-    .select('id', { count: 'exact', head: true })
-    .is('matricula_id', null)
 
   return { porStatus, receitaMesCentavos, pagamentosOrfaos: count ?? 0 }
 }
@@ -81,16 +81,18 @@ export async function obterMatriculaAdmin(id: string) {
 
   if (!data) return null
 
-  const { data: eventos } = await supabase
-    .from('matricula_eventos')
-    .select('de_status, para_status, nota, created_at')
-    .eq('matricula_id', id)
-    .order('created_at')
-
-  const { data: pagamentos } = await supabase
-    .from('pagamentos')
-    .select('id, gateway_ref, metodo, status, valor_centavos, pago_em')
-    .eq('matricula_id', id)
+  // Nenhuma das duas depende da outra — só do id, que já temos.
+  const [{ data: eventos }, { data: pagamentos }] = await Promise.all([
+    supabase
+      .from('matricula_eventos')
+      .select('de_status, para_status, nota, created_at')
+      .eq('matricula_id', id)
+      .order('created_at'),
+    supabase
+      .from('pagamentos')
+      .select('id, gateway_ref, metodo, status, valor_centavos, pago_em')
+      .eq('matricula_id', id),
+  ])
 
   return { matricula: data, eventos: eventos ?? [], pagamentos: pagamentos ?? [] }
 }
@@ -171,25 +173,28 @@ export type AlunoDetalhe = {
 export async function obterAlunoAdmin(id: string): Promise<AlunoDetalhe | null> {
   const supabase = criarClienteAdmin()
 
-  const { data: interno } = await supabase
-    .from('internos')
-    .select(
-      `
-      id, nome, cpf, rg, matricula_prisional, data_nascimento, unidade_prisional_id,
-      unidades_prisionais:unidade_prisional_id (nome, uf, regiao),
-      profiles:responsavel_id (nome, email, telefone)
-    `,
-    )
-    .eq('id', id)
-    .maybeSingle()
+  // matriculas só depende do id, não do resultado de internos — dispara as
+  // duas juntas em vez de esperar uma pra começar a outra.
+  const [{ data: interno }, { data: matriculas }] = await Promise.all([
+    supabase
+      .from('internos')
+      .select(
+        `
+        id, nome, cpf, rg, matricula_prisional, data_nascimento, unidade_prisional_id,
+        unidades_prisionais:unidade_prisional_id (nome, uf, regiao),
+        profiles:responsavel_id (nome, email, telefone)
+      `,
+      )
+      .eq('id', id)
+      .maybeSingle(),
+    supabase
+      .from('matriculas')
+      .select('id, codigo, status, total_centavos, created_at, cursos:curso_id (titulo)')
+      .eq('interno_id', id)
+      .order('created_at', { ascending: false }),
+  ])
 
   if (!interno) return null
-
-  const { data: matriculas } = await supabase
-    .from('matriculas')
-    .select('id, codigo, status, total_centavos, created_at, cursos:curso_id (titulo)')
-    .eq('interno_id', id)
-    .order('created_at', { ascending: false })
 
   return {
     interno: interno as unknown as AlunoDetalhe['interno'],

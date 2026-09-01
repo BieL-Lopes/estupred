@@ -19,16 +19,17 @@ export async function middleware(request: NextRequest) {
   const caminho = request.nextUrl.pathname
   const protegida = ROTAS_PROTEGIDAS.some((p) => caminho.startsWith(p))
 
+  // Rota pública não precisa saber quem é o usuário — cada página resolve
+  // isso sozinha (usuarioAtual, no cabeçalho). Sem essa saída antecipada, o
+  // middleware fazia uma ida e volta ao servidor de auth do Supabase em
+  // toda navegação do site inteiro, não só nas rotas protegidas.
+  if (!protegida) return NextResponse.next()
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const chave = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  // Sem configuração não dá para verificar sessão nenhuma. Rota protegida
-  // vai para o login (falha fechada); o resto do site segue funcionando
-  // (falha aberta). O que não pode é o middleware derrubar a landing e a
-  // própria rota de diagnóstico junto.
-  if (!url || !chave) {
-    return protegida ? paraLogin(request, caminho) : NextResponse.next()
-  }
+  // Sem configuração não dá para verificar sessão nenhuma — falha fechada.
+  if (!url || !chave) return paraLogin(request, caminho)
 
   let resposta = NextResponse.next({ request })
 
@@ -54,13 +55,13 @@ export async function middleware(request: NextRequest) {
 
     // O middleware só verifica se há sessão. Quem é admin é decidido no
     // layout de (admin) e, em última instância, pela RLS.
-    if (protegida && !user) return paraLogin(request, caminho)
+    if (!user) return paraLogin(request, caminho)
 
     return resposta
   } catch {
-    // Supabase fora do ar ou credencial inválida. Mesma regra de antes:
-    // fecha o que é protegido, deixa o site público de pé.
-    return protegida ? paraLogin(request, caminho) : NextResponse.next()
+    // Supabase fora do ar ou credencial inválida numa rota protegida:
+    // fecha o acesso.
+    return paraLogin(request, caminho)
   }
 }
 
