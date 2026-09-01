@@ -1,8 +1,8 @@
 -- ATENCAO: DADOS DE DESENVOLVIMENTO. NAO APLIQUE EM PRODUCAO.
 --
--- Este arquivo cria tres usuarios com a senha 'senha-de-teste', um deles
--- ADMIN. Ele roda apenas em `supabase db reset` local. Em producao use
--- `supabase db push`, que aplica somente as migrations.
+-- Este arquivo cria quatro usuarios com a senha 'senha-de-teste', um deles
+-- ADMIN e outro COLABORADOR. Ele roda apenas em `supabase db reset` local.
+-- Em producao use `supabase db push`, que aplica somente as migrations.
 --
 -- NUNCA rode `supabase db reset --linked`: isso apagaria o banco de
 -- producao e criaria um admin com senha publicamente conhecida.
@@ -45,10 +45,20 @@ values
    '{"provider":"email","providers":["email"]}',
    '{"nome":"Bruno Lima","cpf":"16899535009","telefone":"61977777777"}',
    '', '', '', '',
+   now(), now()),
+  ('44444444-4444-4444-4444-444444444444',
+   '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+   'colaborador@cliqueestudos.com.br', crypt('senha-de-teste', gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}',
+   '{"nome":"Colaborador Teste","cpf":"32165498771","telefone":"61966666666"}',
+   '', '', '', '',
    now(), now());
 
 update profiles set role = 'admin'
   where id = '11111111-1111-1111-1111-111111111111';
+
+update profiles set role = 'colaborador'
+  where id = '44444444-4444-4444-4444-444444444444';
 
 -- Frete para as 27 UFs. Valores de partida, editáveis no admin.
 insert into fretes (uf, valor_centavos, prazo_dias) values
