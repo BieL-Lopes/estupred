@@ -194,3 +194,43 @@ export async function reconciliarPagamento(formData: FormData) {
 
   revalidatePath('/admin')
 }
+
+const EsquemaAlunoAdmin = z.object({
+  id: z.string().uuid(),
+  nome: z.string().trim().min(3),
+  cpf: z.string().trim().min(11),
+  rg: z.string().trim().optional(),
+  matriculaPrisional: z.string().trim().min(1),
+  dataNascimento: z.string().trim().optional(),
+  unidadeId: z.string().uuid(),
+})
+
+export async function salvarAluno(formData: FormData) {
+  await exigirEquipe()
+
+  const d = EsquemaAlunoAdmin.parse({
+    id: formData.get('id'),
+    nome: formData.get('nome'),
+    cpf: formData.get('cpf'),
+    rg: formData.get('rg') || undefined,
+    matriculaPrisional: formData.get('matriculaPrisional'),
+    dataNascimento: formData.get('dataNascimento') || undefined,
+    unidadeId: formData.get('unidadeId'),
+  })
+
+  const supabase = criarClienteAdmin()
+  await supabase
+    .from('internos')
+    .update({
+      nome: d.nome,
+      cpf: d.cpf.replace(/\D/g, ''),
+      rg: d.rg ?? null,
+      matricula_prisional: d.matriculaPrisional,
+      data_nascimento: d.dataNascimento ?? null,
+      unidade_prisional_id: d.unidadeId,
+    })
+    .eq('id', d.id)
+
+  revalidatePath(`/admin/alunos/${d.id}`)
+  revalidatePath('/admin/alunos')
+}

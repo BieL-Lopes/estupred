@@ -94,3 +94,105 @@ export async function obterMatriculaAdmin(id: string) {
 
   return { matricula: data, eventos: eventos ?? [], pagamentos: pagamentos ?? [] }
 }
+
+export type AlunoResumo = {
+  id: string
+  nome: string
+  cpf: string
+  matriculaPrisional: string
+  unidade: { nome: string; uf: string; regiao: string | null } | null
+  totalMatriculas: number
+}
+
+export async function listarAlunosAdmin(filtro?: {
+  busca?: string
+}): Promise<AlunoResumo[]> {
+  const supabase = criarClienteAdmin()
+
+  let consulta = supabase
+    .from('internos')
+    .select(
+      `
+      id, nome, cpf, matricula_prisional,
+      unidades_prisionais:unidade_prisional_id (nome, uf, regiao),
+      matriculas:matriculas (id)
+    `,
+    )
+    .order('nome')
+
+  if (filtro?.busca) {
+    consulta = consulta.or(`nome.ilike.%${filtro.busca}%,cpf.eq.${filtro.busca}`)
+  }
+
+  const { data } = await consulta
+
+  return (data ?? []).map((i) => {
+    const linha = i as unknown as {
+      id: string
+      nome: string
+      cpf: string
+      matricula_prisional: string
+      unidades_prisionais: { nome: string; uf: string; regiao: string | null } | null
+      matriculas: { id: string }[] | null
+    }
+    return {
+      id: linha.id,
+      nome: linha.nome,
+      cpf: linha.cpf,
+      matriculaPrisional: linha.matricula_prisional,
+      unidade: linha.unidades_prisionais,
+      totalMatriculas: linha.matriculas?.length ?? 0,
+    }
+  })
+}
+
+export type AlunoDetalhe = {
+  interno: {
+    id: string
+    nome: string
+    cpf: string
+    rg: string | null
+    matricula_prisional: string
+    data_nascimento: string | null
+    unidade_prisional_id: string
+    unidades_prisionais: { nome: string; uf: string; regiao: string | null } | null
+    profiles: { nome: string; email: string; telefone: string } | null
+  }
+  matriculas: {
+    id: string
+    codigo: string
+    status: string
+    total_centavos: number
+    created_at: string
+    cursos: { titulo: string } | null
+  }[]
+}
+
+export async function obterAlunoAdmin(id: string): Promise<AlunoDetalhe | null> {
+  const supabase = criarClienteAdmin()
+
+  const { data: interno } = await supabase
+    .from('internos')
+    .select(
+      `
+      id, nome, cpf, rg, matricula_prisional, data_nascimento, unidade_prisional_id,
+      unidades_prisionais:unidade_prisional_id (nome, uf, regiao),
+      profiles:responsavel_id (nome, email, telefone)
+    `,
+    )
+    .eq('id', id)
+    .maybeSingle()
+
+  if (!interno) return null
+
+  const { data: matriculas } = await supabase
+    .from('matriculas')
+    .select('id, codigo, status, total_centavos, created_at, cursos:curso_id (titulo)')
+    .eq('interno_id', id)
+    .order('created_at', { ascending: false })
+
+  return {
+    interno: interno as unknown as AlunoDetalhe['interno'],
+    matriculas: (matriculas ?? []) as unknown as AlunoDetalhe['matriculas'],
+  }
+}
