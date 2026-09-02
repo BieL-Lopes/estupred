@@ -1,3 +1,4 @@
+import { BotaoSubmit } from '@/components/ui/BotaoSubmit'
 import { UFS } from '@/lib/dominio/tipos'
 import { salvarUnidade } from '@/lib/admin/acoes'
 
@@ -79,12 +80,9 @@ export function FormularioUnidade({ unidade }: { unidade?: Unidade }) {
         Ativa (aparece na matrícula)
       </label>
 
-      <button
-        type="submit"
-        className="rounded-lg bg-acento px-5 py-2.5 text-sm font-semibold text-fundo transition hover:bg-acento-claro"
-      >
+      <BotaoSubmit className="rounded-lg bg-acento px-5 py-2.5 text-sm font-semibold text-fundo hover:bg-acento-claro">
         Salvar unidade
-      </button>
+      </BotaoSubmit>
     </form>
   )
 }

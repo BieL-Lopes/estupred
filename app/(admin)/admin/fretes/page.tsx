@@ -1,3 +1,4 @@
+import { BotaoSubmit } from '@/components/ui/BotaoSubmit'
 import { salvarFrete } from '@/lib/admin/acoes'
 import { exigirAdmin } from '@/lib/auth'
 import { formatarBRL } from '@/lib/dominio/precos'
@@ -62,12 +63,9 @@ export default async function Fretes() {
                 {atual ? formatarBRL(atual.valor_centavos) : 'não configurado'}
               </span>
 
-              <button
-                type="submit"
-                className="ml-auto rounded-lg bg-acento px-3 py-1.5 text-sm font-semibold text-fundo transition hover:bg-acento-claro"
-              >
+              <BotaoSubmit className="ml-auto rounded-lg bg-acento px-3 py-1.5 text-sm font-semibold text-fundo hover:bg-acento-claro">
                 Salvar
-              </button>
+              </BotaoSubmit>
             </form>
           )
         })}

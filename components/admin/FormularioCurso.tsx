@@ -1,3 +1,4 @@
+import { BotaoSubmit } from '@/components/ui/BotaoSubmit'
 import { salvarCurso } from '@/lib/admin/acoes'
 
 type Curso = {
@@ -84,12 +85,9 @@ export function FormularioCurso({ curso }: { curso?: Curso }) {
         </label>
       </div>
 
-      <button
-        type="submit"
-        className="rounded-lg bg-acento px-5 py-2.5 text-sm font-semibold text-fundo transition hover:bg-acento-claro"
-      >
+      <BotaoSubmit className="rounded-lg bg-acento px-5 py-2.5 text-sm font-semibold text-fundo hover:bg-acento-claro">
         Salvar curso
-      </button>
+      </BotaoSubmit>
     </form>
   )
 }

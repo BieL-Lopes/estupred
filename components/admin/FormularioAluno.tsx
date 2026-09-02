@@ -1,3 +1,4 @@
+import { BotaoSubmit } from '@/components/ui/BotaoSubmit'
 import { salvarAluno } from '@/lib/admin/acoes'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
 
@@ -79,12 +80,9 @@ export async function FormularioAluno({ aluno }: { aluno: Aluno }) {
         </label>
       </div>
 
-      <button
-        type="submit"
-        className="rounded-lg bg-acento px-5 py-2.5 text-sm font-semibold text-fundo transition hover:bg-acento-claro"
-      >
+      <BotaoSubmit className="rounded-lg bg-acento px-5 py-2.5 text-sm font-semibold text-fundo hover:bg-acento-claro">
         Salvar aluno
-      </button>
+      </BotaoSubmit>
     </form>
   )
 }

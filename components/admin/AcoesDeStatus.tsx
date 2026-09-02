@@ -1,3 +1,4 @@
+import { BotaoSubmit } from '@/components/ui/BotaoSubmit'
 import { ROTULO_STATUS, type StatusMatricula } from '@/lib/dominio/tipos'
 import { mudarStatus } from '@/lib/admin/acoes'
 import { proximosStatus } from '@/lib/matricula/transicoes'
@@ -30,12 +31,9 @@ export function AcoesDeStatus({
             placeholder="Observação (opcional)"
             className="flex-1 rounded-lg border border-borda bg-fundo px-3 py-2 text-sm text-texto"
           />
-          <button
-            type="submit"
-            className="rounded-lg bg-acento px-4 py-2 text-sm font-semibold text-fundo transition hover:bg-acento-claro"
-          >
+          <BotaoSubmit className="rounded-lg bg-acento px-4 py-2 text-sm font-semibold text-fundo hover:bg-acento-claro">
             Marcar como {ROTULO_STATUS[destino]}
-          </button>
+          </BotaoSubmit>
         </form>
       ))}
     </div>
