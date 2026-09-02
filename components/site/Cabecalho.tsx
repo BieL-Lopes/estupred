@@ -1,9 +1,10 @@
 import Link from 'next/link'
-import { usuarioAtual } from '@/lib/auth'
+import { temSessao } from '@/lib/auth'
 import { LinksNav } from './LinksNav'
 
 export async function Cabecalho() {
-  const perfil = await usuarioAtual()
+  // Só precisa do rótulo do botão — não vale duas idas à rede por página.
+  const logado = await temSessao()
 
   return (
     <header className="sticky top-0 z-50 border-b border-borda bg-fundo/85 backdrop-blur">
@@ -20,10 +21,10 @@ export async function Cabecalho() {
         <LinksNav />
 
         <Link
-          href={perfil ? '/aluno' : '/entrar'}
+          href={logado ? '/aluno' : '/entrar'}
           className="rounded-lg bg-acento px-4 py-2 text-sm font-semibold text-fundo transition hover:bg-acento-claro"
         >
-          {perfil ? 'Área do Aluno' : 'Entrar'}
+          {logado ? 'Área do Aluno' : 'Entrar'}
         </Link>
       </nav>
     </header>
