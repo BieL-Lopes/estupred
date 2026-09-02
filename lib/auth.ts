@@ -42,30 +42,6 @@ export async function usuarioAtual(): Promise<Perfil | null> {
   }
 }
 
-/**
- * Só responde "tem alguém logado?", sem validar o token contra o servidor
- * nem buscar o profile no banco — lê o cookie e pronto.
- *
- * É para decisão de exibição (qual botão mostrar no cabeçalho), nunca para
- * autorização: quem decide acesso é exigirUsuario/exigirAdmin/exigirEquipe,
- * que continuam usando getUser(), e a RLS por último.
- *
- * O cabeçalho aparece em toda página do site. Com usuarioAtual() aqui, cada
- * navegação pagava duas idas à rede (validação do token + SELECT em
- * profiles) antes de renderizar qualquer coisa.
- */
-export async function temSessao(): Promise<boolean> {
-  try {
-    const supabase = await criarClienteServidor()
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    return session !== null
-  } catch {
-    return false
-  }
-}
-
 export async function exigirUsuario(): Promise<Perfil> {
   const perfil = await usuarioAtual()
   if (!perfil) redirect('/entrar')

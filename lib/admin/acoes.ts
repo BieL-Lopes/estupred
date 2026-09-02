@@ -80,6 +80,9 @@ export async function salvarCurso(formData: FormData) {
 
   revalidatePath('/admin/cursos')
   revalidatePath('/cursos')
+  // A home é estática e mostra os cursos em destaque — sem isto, a edição
+  // só apareceria lá quando o cache expirasse.
+  revalidatePath('/')
 }
 
 const EsquemaUnidadeAdmin = z.object({

@@ -1,11 +1,13 @@
 import Link from 'next/link'
-import { temSessao } from '@/lib/auth'
+import { BotaoAcesso } from './BotaoAcesso'
 import { LinksNav } from './LinksNav'
 
-export async function Cabecalho() {
-  // Só precisa do rótulo do botão — não vale duas idas à rede por página.
-  const logado = await temSessao()
-
+/**
+ * Sem nada de sessão aqui: é o que permite as páginas institucionais serem
+ * geradas uma vez e servidas do CDN. Quem resolve o estado de login é o
+ * BotaoAcesso, no navegador.
+ */
+export function Cabecalho() {
   return (
     <header className="sticky top-0 z-50 border-b border-borda bg-fundo/85 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
@@ -20,12 +22,7 @@ export async function Cabecalho() {
 
         <LinksNav />
 
-        <Link
-          href={logado ? '/aluno' : '/entrar'}
-          className="rounded-lg bg-acento px-4 py-2 text-sm font-semibold text-fundo transition hover:bg-acento-claro"
-        >
-          {logado ? 'Área do Aluno' : 'Entrar'}
-        </Link>
+        <BotaoAcesso />
       </nav>
     </header>
   )

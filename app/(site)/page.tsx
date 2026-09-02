@@ -3,6 +3,14 @@ import { BotaoLink } from '@/components/ui/Botao'
 import { CartaoCurso } from '@/components/site/CartaoCurso'
 import { listarCursos } from '@/lib/catalogo'
 
+/**
+ * A home é servida pronta do CDN, então o catálogo em destaque fica
+ * congelado no momento em que a página foi gerada. Editar um curso no admin
+ * chama revalidatePath('/') e regenera na hora; esta hora aqui é só a rede
+ * de segurança para mudanças feitas fora do painel (direto no banco).
+ */
+export const revalidate = 3600
+
 const DESTAQUES_HERO = [
   'Certificado por instituição credenciada',
   'Matrícula 100% online',
