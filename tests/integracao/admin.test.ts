@@ -70,15 +70,15 @@ describe('avanço manual de status pelo admin', () => {
   it('é seguro contra corrida: o segundo avanço concorrente não duplica evento', async () => {
     const m = await matriculaNoStatus('paga')
     await Promise.allSettled([
-      avancarStatus({ matriculaId: m.id, para: 'material_enviado' }),
-      avancarStatus({ matriculaId: m.id, para: 'material_enviado' }),
+      avancarStatus({ matriculaId: m.id, para: 'material_em_producao' }),
+      avancarStatus({ matriculaId: m.id, para: 'material_em_producao' }),
     ])
 
     const { data } = await admin
       .from('matricula_eventos')
       .select('id')
       .eq('matricula_id', m.id)
-      .eq('para_status', 'material_enviado')
+      .eq('para_status', 'material_em_producao')
     expect(data!.length).toBe(1)
   })
 })

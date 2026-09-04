@@ -1,13 +1,18 @@
 import type { StatusMatricula } from '@/lib/dominio/tipos'
 
 /**
- * Status em que o material já saiu da gráfica e está na unidade prisional.
- * É isso que ocupa o aluno — não a data da compra. Uma matrícula paga não
- * segura ninguém, porque até ali nada foi gasto.
+ * Status em que o material já saiu do papel e há dinheiro comprometido: da
+ * produção em diante o aluno está ocupado e não pode começar outro curso.
+ * Uma matrícula apenas paga não segura ninguém, porque até ali nada foi gasto.
  *
  * `reprovado` continua ocupando: o aluno vai refazer a prova do mesmo curso.
+ * `material_enviado` está aposentado, mas significava "entregue na unidade" —
+ * se alguma linha antiga escapar da migração, ela tem que continuar ocupando.
  */
 export const STATUS_EM_CURSO = [
+  'material_em_producao',
+  'material_a_caminho',
+  'material_entregue',
   'material_enviado',
   'prova_aplicada',
   'aprovado',
@@ -49,10 +54,10 @@ export function situacaoDaFila(
 }
 
 /**
- * Devolve a matrícula que impede `alvoId` de receber material, ou null se
- * o caminho está livre.
+ * Devolve a matrícula que impede `alvoId` de começar a produção do material,
+ * ou null se o caminho está livre.
  */
-export function bloqueioDeEnvio(
+export function bloqueioDeProducao(
   alvoId: string,
   matriculas: readonly MatriculaDaFila[],
 ): MatriculaDaFila | null {

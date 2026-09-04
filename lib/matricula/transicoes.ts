@@ -5,13 +5,18 @@ export const TRANSICOES: Readonly<
 > = {
   rascunho: ['aguardando_pagamento', 'cancelada'],
   aguardando_pagamento: ['paga', 'cancelada'],
-  paga: ['material_enviado'],
-  material_enviado: ['prova_aplicada'],
+  paga: ['material_em_producao'],
+  material_em_producao: ['material_a_caminho'],
+  material_a_caminho: ['material_entregue'],
+  material_entregue: ['prova_aplicada'],
   prova_aplicada: ['aprovado', 'reprovado'],
   reprovado: ['prova_aplicada'],
   aprovado: ['certificado_emitido'],
   certificado_emitido: [],
   cancelada: [],
+  // Etapa aposentada: ninguém entra e ninguém sai. Ver a migração
+  // 20260905000001 para o porquê de o valor continuar existindo.
+  material_enviado: [],
 }
 
 export class TransicaoInvalidaError extends Error {

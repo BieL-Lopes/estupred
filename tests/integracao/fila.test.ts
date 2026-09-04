@@ -90,22 +90,22 @@ async function alunoComMatriculasPagas(quantas: number): Promise<string[]> {
 describe('um curso por vez', () => {
   it('deixa a primeira matrícula receber material', async () => {
     const [primeira] = await alunoComMatriculasPagas(1)
-    await avancarStatus({ matriculaId: primeira!, para: 'material_enviado' })
+    await avancarStatus({ matriculaId: primeira!, para: 'material_em_producao' })
 
     const { data } = await admin
       .from('matriculas')
       .select('status')
       .eq('id', primeira!)
       .single()
-    expect(data!.status).toBe('material_enviado')
+    expect(data!.status).toBe('material_em_producao')
   })
 
   it('recusa a segunda com erro que aponta quem está segurando', async () => {
     const [primeira, segunda] = await alunoComMatriculasPagas(2)
-    await avancarStatus({ matriculaId: primeira!, para: 'material_enviado' })
+    await avancarStatus({ matriculaId: primeira!, para: 'material_em_producao' })
 
     await expect(
-      avancarStatus({ matriculaId: segunda!, para: 'material_enviado' }),
+      avancarStatus({ matriculaId: segunda!, para: 'material_em_producao' }),
     ).rejects.toBeInstanceOf(AlunoOcupadoError)
 
     const { data } = await admin
@@ -120,7 +120,9 @@ describe('um curso por vez', () => {
     const [primeira, segunda] = await alunoComMatriculasPagas(2)
 
     for (const para of [
-      'material_enviado',
+      'material_em_producao',
+      'material_a_caminho',
+      'material_entregue',
       'prova_aplicada',
       'aprovado',
       'certificado_emitido',
@@ -128,31 +130,37 @@ describe('um curso por vez', () => {
       await avancarStatus({ matriculaId: primeira!, para })
     }
 
-    await avancarStatus({ matriculaId: segunda!, para: 'material_enviado' })
+    await avancarStatus({ matriculaId: segunda!, para: 'material_em_producao' })
 
     const { data } = await admin
       .from('matriculas')
       .select('status')
       .eq('id', segunda!)
       .single()
-    expect(data!.status).toBe('material_enviado')
+    expect(data!.status).toBe('material_em_producao')
   })
 
   it('continua segurando enquanto a primeira está só aprovada', async () => {
     const [primeira, segunda] = await alunoComMatriculasPagas(2)
 
-    for (const para of ['material_enviado', 'prova_aplicada', 'aprovado'] as const) {
+    for (const para of [
+      'material_em_producao',
+      'material_a_caminho',
+      'material_entregue',
+      'prova_aplicada',
+      'aprovado',
+    ] as const) {
       await avancarStatus({ matriculaId: primeira!, para })
     }
 
     await expect(
-      avancarStatus({ matriculaId: segunda!, para: 'material_enviado' }),
+      avancarStatus({ matriculaId: segunda!, para: 'material_em_producao' }),
     ).rejects.toBeInstanceOf(AlunoOcupadoError)
   })
 
   it('o trigger recusa mesmo quando a escrita não passa pelo app', async () => {
     const [primeira, segunda] = await alunoComMatriculasPagas(2)
-    await avancarStatus({ matriculaId: primeira!, para: 'material_enviado' })
+    await avancarStatus({ matriculaId: primeira!, para: 'material_em_producao' })
 
     const { error } = await admin
       .from('matriculas')

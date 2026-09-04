@@ -496,6 +496,9 @@ export type Database = {
         | "reprovado"
         | "certificado_emitido"
         | "cancelada"
+        | "material_em_producao"
+        | "material_a_caminho"
+        | "material_entregue"
       status_pagamento:
         | "pendente"
         | "pago"
@@ -644,6 +647,9 @@ export const Constants = {
         "reprovado",
         "certificado_emitido",
         "cancelada",
+        "material_em_producao",
+        "material_a_caminho",
+        "material_entregue",
       ],
       status_pagamento: ["pendente", "pago", "falhou", "expirado", "estornado"],
     },

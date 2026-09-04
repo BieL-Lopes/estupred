@@ -35,7 +35,9 @@ describe('transicaoPermitida', () => {
       'rascunho',
       'aguardando_pagamento',
       'paga',
-      'material_enviado',
+      'material_em_producao',
+      'material_a_caminho',
+      'material_entregue',
       'prova_aplicada',
       'aprovado',
       'certificado_emitido',
@@ -44,6 +46,12 @@ describe('transicaoPermitida', () => {
     for (let i = 0; i < caminho.length - 1; i++) {
       expect(transicaoPermitida(caminho[i]!, caminho[i + 1]!)).toBe(true)
     }
+  })
+
+  it('trata material_enviado como etapa aposentada, sem saída', () => {
+    // Fica no enum só para o histórico de matricula_eventos continuar
+    // legível. Nenhuma matrícula deveria estar aqui depois da migração.
+    expect(proximosStatus('material_enviado')).toEqual([])
   })
 
   it('permite a recuperação: reprovado volta para prova aplicada', () => {
@@ -58,11 +66,12 @@ describe('transicaoPermitida', () => {
 
   it('proíbe cancelar depois do pagamento', () => {
     expect(transicaoPermitida('paga', 'cancelada')).toBe(false)
-    expect(transicaoPermitida('material_enviado', 'cancelada')).toBe(false)
+    expect(transicaoPermitida('material_entregue', 'cancelada')).toBe(false)
   })
 
   it('proíbe pular etapas', () => {
-    expect(transicaoPermitida('aguardando_pagamento', 'material_enviado')).toBe(false)
+    expect(transicaoPermitida('aguardando_pagamento', 'material_em_producao')).toBe(false)
+    expect(transicaoPermitida('paga', 'material_entregue')).toBe(false)
     expect(transicaoPermitida('paga', 'aprovado')).toBe(false)
     expect(transicaoPermitida('rascunho', 'paga')).toBe(false)
   })
@@ -84,7 +93,7 @@ describe('transicaoPermitida', () => {
 
 describe('assertTransicao', () => {
   it('não faz nada quando a transição é legal', () => {
-    expect(() => assertTransicao('paga', 'material_enviado')).not.toThrow()
+    expect(() => assertTransicao('paga', 'material_em_producao')).not.toThrow()
   })
 
   it('lança TransicaoInvalidaError quando é ilegal', () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   STATUS_EM_CURSO,
-  bloqueioDeEnvio,
+  bloqueioDeProducao,
   estaEmCurso,
   situacaoDaFila,
   type MatriculaDaFila,
@@ -16,12 +16,16 @@ function m(
 }
 
 describe('estaEmCurso', () => {
-  it('considera em curso só quem já teve material enviado', () => {
-    expect(estaEmCurso('material_enviado')).toBe(true)
+  it('considera em curso desde a produção do material', () => {
+    expect(estaEmCurso('material_em_producao')).toBe(true)
+    expect(estaEmCurso('material_a_caminho')).toBe(true)
+    expect(estaEmCurso('material_entregue')).toBe(true)
     expect(estaEmCurso('prova_aplicada')).toBe(true)
     expect(estaEmCurso('aprovado')).toBe(true)
     // Reprovado ainda ocupa: o aluno vai refazer a prova do mesmo curso.
     expect(estaEmCurso('reprovado')).toBe(true)
+    // Aposentado, mas significava "entregue": se sobrar linha antiga, ocupa.
+    expect(estaEmCurso('material_enviado')).toBe(true)
   })
 
   it('não considera em curso quem ainda não recebeu material', () => {
@@ -37,7 +41,15 @@ describe('estaEmCurso', () => {
 
   it('declara todos os status em curso na constante exportada', () => {
     expect([...STATUS_EM_CURSO].sort()).toEqual(
-      ['aprovado', 'material_enviado', 'prova_aplicada', 'reprovado'].sort(),
+      [
+        'aprovado',
+        'material_a_caminho',
+        'material_em_producao',
+        'material_entregue',
+        'material_enviado',
+        'prova_aplicada',
+        'reprovado',
+      ].sort(),
     )
   })
 })
@@ -58,7 +70,7 @@ describe('situacaoDaFila', () => {
     // curso é a segunda, que já recebeu material.
     const s = situacaoDaFila([
       m('velha', 'paga', '2026-01-01'),
-      m('ativa', 'material_enviado', '2026-01-05'),
+      m('ativa', 'material_em_producao', '2026-01-05'),
       m('nova', 'paga', '2026-01-09'),
     ])
     expect(s.emCurso?.id).toBe('ativa')
@@ -91,28 +103,28 @@ describe('situacaoDaFila', () => {
     // precisa ser determinística se acontecer.
     const s = situacaoDaFila([
       m('nova', 'aprovado', '2026-02-01'),
-      m('velha', 'material_enviado', '2026-01-01'),
+      m('velha', 'material_a_caminho', '2026-01-01'),
     ])
     expect(s.emCurso?.id).toBe('velha')
   })
 })
 
-describe('bloqueioDeEnvio', () => {
+describe('bloqueioDeProducao', () => {
   it('não bloqueia quando nenhuma outra está em curso', () => {
     const lista = [m('alvo', 'paga', '2026-01-02'), m('outra', 'paga', '2026-01-01')]
-    expect(bloqueioDeEnvio('alvo', lista)).toBeNull()
+    expect(bloqueioDeProducao('alvo', lista)).toBeNull()
   })
 
   it('bloqueia apontando qual matrícula está segurando', () => {
     const lista = [
       m('alvo', 'paga', '2026-01-02'),
-      m('ativa', 'prova_aplicada', '2026-01-01'),
+      m('ativa', 'material_em_producao', '2026-01-01'),
     ]
-    expect(bloqueioDeEnvio('alvo', lista)?.id).toBe('ativa')
+    expect(bloqueioDeProducao('alvo', lista)?.id).toBe('ativa')
   })
 
   it('não considera a própria matrícula um bloqueio', () => {
-    const lista = [m('alvo', 'material_enviado', '2026-01-02')]
-    expect(bloqueioDeEnvio('alvo', lista)).toBeNull()
+    const lista = [m('alvo', 'material_em_producao', '2026-01-02')]
+    expect(bloqueioDeProducao('alvo', lista)).toBeNull()
   })
 })

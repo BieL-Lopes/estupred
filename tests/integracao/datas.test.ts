@@ -83,11 +83,34 @@ describe('datas carimbadas pela transição', () => {
     expect(data!.data_prova).toBeNull()
   })
 
-  it('na entrega do material grava início e calcula a prova pela regra 45+', async () => {
+  it('grava início e prova só na entrega, não na produção nem no envio', async () => {
     const m = await matriculaNoStatus('paga')
+
     await avancarStatus({
       matriculaId: m.id,
-      para: 'material_enviado',
+      para: 'material_em_producao',
+      hoje: '2026-01-05',
+    })
+    await avancarStatus({
+      matriculaId: m.id,
+      para: 'material_a_caminho',
+      hoje: '2026-01-06',
+    })
+
+    const { data: antes } = await admin
+      .from('matriculas')
+      .select('data_inicio, data_prova')
+      .eq('id', m.id)
+      .single()
+
+    // Produção e envio não carimbam nada: o relógio dos 45 dias só começa
+    // quando o material chega na unidade.
+    expect(antes!.data_inicio).toBeNull()
+    expect(antes!.data_prova).toBeNull()
+
+    await avancarStatus({
+      matriculaId: m.id,
+      para: 'material_entregue',
       hoje: '2026-01-07',
     })
 
@@ -106,11 +129,13 @@ describe('datas carimbadas pela transição', () => {
   it('a data da compra é diferente da data de início, como o cliente pediu', async () => {
     const m = await matriculaNoStatus('aguardando_pagamento')
     await avancarStatus({ matriculaId: m.id, para: 'paga', hoje: '2026-01-05' })
-    await avancarStatus({
-      matriculaId: m.id,
-      para: 'material_enviado',
-      hoje: '2026-02-02',
-    })
+    for (const para of [
+      'material_em_producao',
+      'material_a_caminho',
+      'material_entregue',
+    ] as const) {
+      await avancarStatus({ matriculaId: m.id, para, hoje: '2026-02-02' })
+    }
 
     const { data } = await admin
       .from('matriculas')
@@ -127,11 +152,13 @@ describe('datas carimbadas pela transição', () => {
   it('não sobrescreve a data de compra em transições posteriores', async () => {
     const m = await matriculaNoStatus('aguardando_pagamento')
     await avancarStatus({ matriculaId: m.id, para: 'paga', hoje: '2026-01-05' })
-    await avancarStatus({
-      matriculaId: m.id,
-      para: 'material_enviado',
-      hoje: '2026-02-02',
-    })
+    for (const para of [
+      'material_em_producao',
+      'material_a_caminho',
+      'material_entregue',
+    ] as const) {
+      await avancarStatus({ matriculaId: m.id, para, hoje: '2026-02-02' })
+    }
     await avancarStatus({
       matriculaId: m.id,
       para: 'prova_aplicada',

@@ -1,6 +1,6 @@
 import 'server-only'
 import type { StatusMatricula } from '@/lib/dominio/tipos'
-import { bloqueioDeEnvio, type MatriculaDaFila } from '@/lib/matricula/fila'
+import { bloqueioDeProducao, type MatriculaDaFila } from '@/lib/matricula/fila'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
 
 export async function resumoDoPainel() {
@@ -103,7 +103,7 @@ export async function obterMatriculaAdmin(id: string) {
   // O painel precisa saber, antes de desenhar o botão, se o envio de material
   // está travado por outro curso do mesmo aluno — botão que só falha depois
   // do clique é pior do que botão que não aparece.
-  const bloqueio = bloqueioDeEnvio(
+  const bloqueio = bloqueioDeProducao(
     id,
     (irmas ?? []).map<MatriculaDaFila>((m) => ({
       id: m.id,

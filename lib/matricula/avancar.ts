@@ -1,7 +1,7 @@
 import 'server-only'
 import type { StatusMatricula } from '@/lib/dominio/tipos'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
-import { bloqueioDeEnvio, type MatriculaDaFila } from './fila'
+import { bloqueioDeProducao, type MatriculaDaFila } from './fila'
 import { calcularDataProva } from './prazos'
 import { assertTransicao } from './transicoes'
 
@@ -18,7 +18,8 @@ export class AlunoOcupadoError extends Error {
   constructor(readonly bloqueadaPor: { id: string; codigo: string }) {
     super(
       `Este aluno já tem um curso em andamento (${bloqueadaPor.codigo}). ` +
-        'O material do próximo só sai depois que o certificado dele for emitido.',
+        'A produção do material do próximo só começa depois que o certificado ' +
+        'dele for emitido.',
     )
     this.name = 'AlunoOcupadoError'
   }
@@ -31,16 +32,20 @@ function hojeIso(): string {
 /**
  * Carimba as datas que o cliente pediu no documento "Projeto Faculdade".
  * Elas são consequência da transição, não campos digitados à mão:
- *   - paga            → data da compra
- *   - material_enviado → entrega do material, que é o início do curso, e a
- *                        partir dela a data da prova pela regra dos 45+
+ *   - paga              → data da compra
+ *   - material_entregue → entrega do material na unidade, que é o início do
+ *                         curso, e a partir dela a data da prova (45 corridos)
+ *
+ * O gatilho mudou de `material_enviado` para `material_entregue` em 05/09,
+ * quando as etapas foram separadas. O marco não mudou: `material_enviado`
+ * já queria dizer "entregue na unidade".
  */
 function datasDaTransicao(
   para: StatusMatricula,
   hoje: string,
 ): Record<string, string> {
   if (para === 'paga') return { data_compra: hoje }
-  if (para === 'material_enviado') {
+  if (para === 'material_entregue') {
     return { data_inicio: hoje, data_prova: calcularDataProva(hoje) }
   }
   return {}
@@ -66,11 +71,11 @@ export async function avancarStatus(entrada: EntradaAvanco): Promise<void> {
   const de = matricula.status as StatusMatricula
   assertTransicao(de, entrada.para)
 
-  // A regra de um curso por vez trava aqui, no envio de material, porque é o
-  // primeiro passo que gasta dinheiro: até a matrícula paga nada saiu da
-  // gráfica. O trigger no banco recusa o mesmo caso; esta checagem existe
-  // para o painel poder mostrar o motivo antes de o colaborador clicar.
-  if (entrada.para === 'material_enviado') {
+  // A regra de um curso por vez trava na produção, que é o primeiro passo
+  // depois de paga: é ali que o dinheiro começa a ser gasto. O trigger no
+  // banco recusa o mesmo caso; esta checagem existe para o painel poder
+  // mostrar o motivo antes de o colaborador clicar.
+  if (entrada.para === 'material_em_producao') {
     const { data: irmas } = await supabase
       .from('matriculas')
       .select('id, codigo, status, created_at')
@@ -83,7 +88,7 @@ export async function avancarStatus(entrada: EntradaAvanco): Promise<void> {
       criadaEm: m.created_at,
     }))
 
-    const bloqueio = bloqueioDeEnvio(entrada.matriculaId, lista)
+    const bloqueio = bloqueioDeProducao(entrada.matriculaId, lista)
     if (bloqueio) throw new AlunoOcupadoError(bloqueio)
   }
 
