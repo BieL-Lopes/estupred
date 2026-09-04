@@ -10,6 +10,7 @@ import {
 } from '@/lib/dominio/esquemas'
 import { obterCurso } from '@/lib/catalogo'
 import { obterFrete } from '@/lib/frete'
+import { garantirInterno } from '@/lib/matricula/interno'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
 
 export type ResultadoMatricula =
@@ -96,22 +97,18 @@ export async function criarMatricula(entrada: {
     responsavelId = criado.user.id
   }
 
-  const { data: internoCriado, error: erroInterno } = await servidor
-    .from('internos')
-    .insert({
-      nome: interno.data.nome,
-      cpf: interno.data.cpf,
-      rg: interno.data.rg || null,
-      matricula_prisional: interno.data.matriculaPrisional,
-      data_nascimento: interno.data.dataNascimento || null,
-      unidade_prisional_id: unidade.data.unidadeId,
-      responsavel_id: responsavelId,
+  // Segunda compra para a mesma pessoa reaproveita o cadastro em vez de criar
+  // um aluno novo — o CPF é a identidade.
+  let internoId: string
+  try {
+    const resultado = await garantirInterno({
+      interno: interno.data,
+      unidadeId: unidade.data.unidadeId,
+      responsavelId,
       parentesco: responsavel.data.parentesco,
     })
-    .select('id')
-    .single()
-
-  if (erroInterno || !internoCriado) {
+    internoId = resultado.id
+  } catch {
     return { ok: false, erro: 'Não foi possível registrar os dados do interno.' }
   }
 
@@ -122,7 +119,7 @@ export async function criarMatricula(entrada: {
   const { data: matricula, error: erroMatricula } = await servidor
     .from('matriculas')
     .insert({
-      interno_id: internoCriado.id,
+      interno_id: internoId,
       curso_id: curso.id,
       responsavel_id: responsavelId,
       unidade_prisional_id: unidade.data.unidadeId,
