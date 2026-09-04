@@ -4,6 +4,7 @@ import { AcoesDeStatus } from '@/components/admin/AcoesDeStatus'
 import { Selo } from '@/components/ui/Selo'
 import { obterMatriculaAdmin } from '@/lib/admin/consultas'
 import { reconciliarPagamento } from '@/lib/admin/acoes'
+import { exigirEquipe } from '@/lib/auth'
 import { formatarCpf } from '@/lib/dominio/cpf'
 import { formatarBRL } from '@/lib/dominio/precos'
 import { ROTULO_STATUS, type StatusMatricula } from '@/lib/dominio/tipos'
@@ -21,6 +22,7 @@ export default async function DetalheAdmin({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const perfil = await exigirEquipe()
   const resultado = await obterMatriculaAdmin(id)
   if (!resultado) notFound()
 
@@ -191,6 +193,7 @@ export default async function DetalheAdmin({
             matriculaId={m.id}
             status={m.status}
             bloqueio={resultado.bloqueio}
+            papel={perfil.role === 'admin' ? 'admin' : 'colaborador'}
           />
         </div>
       </section>

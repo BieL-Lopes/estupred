@@ -7,12 +7,11 @@ import { exigirAdmin, exigirEquipe } from '@/lib/auth'
 import { EsquemaResponsavel } from '@/lib/dominio/esquemas'
 import { STATUS_MATRICULA, UFS } from '@/lib/dominio/tipos'
 import { avancarStatus } from '@/lib/matricula/avancar'
+import { checagemParaTransicao } from '@/lib/matricula/permissoes'
 import { obterGateway } from '@/lib/pagamento'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
 
 export async function mudarStatus(formData: FormData) {
-  const perfil = await exigirEquipe()
-
   const entrada = z
     .object({
       matriculaId: z.string().uuid(),
@@ -24,6 +23,14 @@ export async function mudarStatus(formData: FormData) {
       para: formData.get('para'),
       nota: formData.get('nota') || undefined,
     })
+
+  // A checagem depende do destino: liberar produção é só do admin. Ela roda
+  // aqui, no servidor, porque uma Server Action é um endpoint HTTP por si só
+  // — esconder o botão na tela não protege nada sozinho.
+  const perfil =
+    checagemParaTransicao(entrada.para) === 'admin'
+      ? await exigirAdmin()
+      : await exigirEquipe()
 
   await avancarStatus({ ...entrada, autorId: perfil.id })
   revalidatePath(`/admin/matriculas/${entrada.matriculaId}`)
