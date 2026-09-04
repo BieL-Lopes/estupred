@@ -74,6 +74,12 @@ sobrescrever um cadastro existente:
 - **checkout público: não.** Mantém o comportamento atual, em que uma família
   comprando de novo não altera sozinha o cadastro.
 
+Sobrescrever alcança **nome e telefone, nunca o e-mail.** O e-mail é a
+identidade de autenticação: `prepararLoginPorCpf` resolve o e-mail pelo CPF em
+`profiles` e gera o link mágico contra `auth.users`. Alterar só o lado de
+`profiles` faria os dois divergirem e quebraria o login por CPF do responsável
+— silenciosamente, e só na próxima vez que ele tentasse entrar.
+
 Três lugares usam a função:
 
 | Lugar | Responsável | Grava em |
@@ -89,10 +95,20 @@ matrícula guarda seu comprador, e como a RLS do Portal do Aluno filtra por
 `matriculas.responsavel_id`, cada uma enxerga a sua sem tirar a da outra.
 
 Regra exata sobre `internos.responsavel_id`, que refina a da spec anterior
-("é o único campo que não é sobrescrito"): ele é **preenchido quando está
-nulo** e **nunca trocado quando já tem valor**. Assim um aluno pré-cadastrado
-sem responsável ganha o primeiro que o matricular, e o cadastro de quem
-comprou primeiro nunca é tomado por quem comprou depois.
+("é o único campo que não é sobrescrito"):
+
+- **Nos fluxos automáticos** — checkout público e matrícula pelo painel — ele é
+  **preenchido quando está nulo** e **nunca trocado quando já tem valor**.
+  Assim um aluno pré-cadastrado sem responsável ganha o primeiro que o
+  matricular, e o cadastro de quem comprou primeiro nunca é tomado por quem
+  comprou depois como efeito colateral de uma compra.
+- **Na edição do cadastro do aluno** ele **pode ser trocado**. Ali o
+  colaborador está corrigindo o cadastro de propósito, com a tela aberta para
+  isso; recusar a troca tornaria a tela incapaz de consertar um responsável
+  errado, que é justamente o que o cliente pediu.
+
+A diferença é de intenção: numa compra, trocar o responsável do cadastro é
+efeito colateral; na tela de edição, é o objetivo.
 
 O bloco de responsável é **tudo ou nada**: ou os cinco campos vêm
 preenchidos, ou nenhum. Preenchimento parcial é recusado com mensagem, porque
