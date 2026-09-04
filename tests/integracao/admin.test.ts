@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { describe, expect, it } from 'vitest'
 import type { Database } from '@/lib/supabase/tipos'
 import { avancarStatus } from '@/lib/matricula/avancar'
+import { atualizarAluno } from '@/lib/admin/alunos'
 
 const admin = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -79,5 +80,84 @@ describe('avanço manual de status pelo admin', () => {
       .eq('matricula_id', m.id)
       .eq('para_status', 'material_enviado')
     expect(data!.length).toBe(1)
+  })
+})
+
+describe('atualizarAluno com CPF já usado', () => {
+  it('devolve mensagem legível em vez de estourar', async () => {
+    const { data: unidade } = await admin
+      .from('unidades_prisionais')
+      .select('id')
+      .limit(1)
+      .single()
+
+    const cpfOcupado = novoCpf()
+    await admin.from('internos').insert({
+      nome: 'Aluno Que Ja Existe',
+      cpf: cpfOcupado,
+      matricula_prisional: 'MP-OCUPADO',
+      unidade_prisional_id: unidade!.id,
+    })
+
+    const { data: alvo } = await admin
+      .from('internos')
+      .insert({
+        nome: 'Aluno Alvo',
+        cpf: novoCpf(),
+        matricula_prisional: 'MP-ALVO',
+        unidade_prisional_id: unidade!.id,
+      })
+      .select('id')
+      .single()
+
+    const r = await atualizarAluno({
+      id: alvo!.id,
+      nome: 'Aluno Alvo Editado',
+      cpf: cpfOcupado,
+      matriculaPrisional: 'MP-ALVO',
+      unidadeId: unidade!.id,
+    })
+
+    expect(r.ok).toBe(false)
+    if (r.ok) return
+    expect(r.erro).toContain('CPF')
+  })
+
+  it('salva normalmente quando o CPF é livre', async () => {
+    const { data: unidade } = await admin
+      .from('unidades_prisionais')
+      .select('id')
+      .limit(1)
+      .single()
+
+    const { data: alvo } = await admin
+      .from('internos')
+      .insert({
+        nome: 'Aluno Editavel',
+        cpf: novoCpf(),
+        matricula_prisional: 'MP-EDIT',
+        unidade_prisional_id: unidade!.id,
+      })
+      .select('id')
+      .single()
+
+    const cpfNovo = novoCpf()
+    const r = await atualizarAluno({
+      id: alvo!.id,
+      nome: 'Aluno Editavel Corrigido',
+      cpf: cpfNovo,
+      matriculaPrisional: 'MP-EDIT-2',
+      unidadeId: unidade!.id,
+    })
+
+    expect(r.ok).toBe(true)
+
+    const { data } = await admin
+      .from('internos')
+      .select('nome, cpf')
+      .eq('id', alvo!.id)
+      .single()
+    expect(data!.nome).toBe('Aluno Editavel Corrigido')
+    expect(data!.cpf).toBe(cpfNovo)
   })
 })

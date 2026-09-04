@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { atualizarAluno, type ResultadoSalvarAluno } from '@/lib/admin/alunos'
 import { exigirAdmin, exigirEquipe } from '@/lib/auth'
 import { STATUS_MATRICULA, UFS } from '@/lib/dominio/tipos'
 import { avancarStatus } from '@/lib/matricula/avancar'
@@ -208,7 +209,10 @@ const EsquemaAlunoAdmin = z.object({
   unidadeId: z.string().uuid(),
 })
 
-export async function salvarAluno(formData: FormData) {
+export async function salvarAluno(
+  _anterior: ResultadoSalvarAluno | null,
+  formData: FormData,
+): Promise<ResultadoSalvarAluno> {
   await exigirEquipe()
 
   const d = EsquemaAlunoAdmin.parse({
@@ -221,19 +225,10 @@ export async function salvarAluno(formData: FormData) {
     unidadeId: formData.get('unidadeId'),
   })
 
-  const supabase = criarClienteAdmin()
-  await supabase
-    .from('internos')
-    .update({
-      nome: d.nome,
-      cpf: d.cpf.replace(/\D/g, ''),
-      rg: d.rg ?? null,
-      matricula_prisional: d.matriculaPrisional,
-      data_nascimento: d.dataNascimento ?? null,
-      unidade_prisional_id: d.unidadeId,
-    })
-    .eq('id', d.id)
+  const resultado = await atualizarAluno(d)
+  if (!resultado.ok) return resultado
 
   revalidatePath(`/admin/alunos/${d.id}`)
   revalidatePath('/admin/alunos')
+  return resultado
 }
