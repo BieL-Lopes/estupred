@@ -140,7 +140,7 @@ export default async function DetalheAdmin({
               <dd>{formatarData(m.data_inicio)}</dd>
             </div>
             <div>
-              <dt className="text-texto-fraco">Prova (regra 45+)</dt>
+              <dt className="text-texto-fraco">Prova (45 dias após a entrega)</dt>
               <dd>{formatarData(m.data_prova)}</dd>
             </div>
           </dl>

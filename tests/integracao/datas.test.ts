@@ -98,8 +98,8 @@ describe('datas carimbadas pela transição', () => {
       .single()
 
     expect(data!.data_inicio).toBe('2026-01-07')
-    // 7 de janeiro + 45 dias cai num sábado, então a prova vai para segunda.
-    expect(data!.data_prova).toBe('2026-02-23')
+    // 45 dias corridos, mesmo caindo num sábado.
+    expect(data!.data_prova).toBe('2026-02-21')
     expect(data!.data_prova).toBe(calcularDataProva('2026-01-07'))
   })
 
