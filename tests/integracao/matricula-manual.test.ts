@@ -113,12 +113,14 @@ describe('registrarMatriculaParaAlunoExistente', () => {
     if (!primeira.ok) return
 
     const { data: interno } = await admin
-      .from('internos').select('id, responsavel_id')
+      .from('internos').select('id, responsavel_id, unidade_prisional_id')
       .eq('matricula_prisional', 'MP-MANUAL-0002').single()
 
+    // Sem transferência: repete a unidade atual do aluno.
     const segunda = await registrarMatriculaParaAlunoExistente({
       internoId: interno!.id,
       cursoSlug: 'formacao-para-eletricista',
+      unidadeId: interno!.unidade_prisional_id,
     })
     expect(segunda.ok).toBe(true)
 
@@ -138,5 +140,91 @@ describe('registrarMatriculaParaAlunoExistente', () => {
       cursoSlug: 'auxiliar-de-cozinha',
     })
     expect(r).toEqual({ ok: false, erro: 'Aluno não encontrado' })
+  })
+})
+
+describe('registrarMatriculaParaAlunoExistente com unidade escolhida', () => {
+  it('usa a unidade da matrícula para o frete e atualiza o cadastro do aluno', async () => {
+    const marca = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+
+    // Unidades próprias em UFs com frete configurado: outro arquivo de teste
+    // apaga as unidades que cria, e o vitest roda os arquivos em paralelo.
+    const { data: criadas } = await admin
+      .from('unidades_prisionais')
+      .insert([
+        {
+          uf: 'DF',
+          nome: `Unidade Origem ${marca}`,
+          endereco: 'Rua Origem, 1',
+          cep: '70000000',
+        },
+        {
+          uf: 'GO',
+          nome: `Unidade Destino ${marca}`,
+          endereco: 'Rua Destino, 2',
+          cep: '74000000',
+        },
+      ])
+      .select('id, uf')
+
+    const origem = criadas!.find((u) => u.uf === 'DF')!
+    const destino = criadas!.find((u) => u.uf === 'GO')!
+
+    const primeira = await registrarMatriculaManualNovoAluno({
+      cursoSlug: 'auxiliar-de-cozinha',
+      unidade: { uf: 'DF', unidadeId: origem.id },
+      interno: {
+        nome: 'Aluno Transferido',
+        cpf: novoCpf(),
+        matriculaPrisional: `MP-TRANSF-${marca}`,
+      },
+      responsavel: {
+        nome: 'Responsavel Transferido',
+        cpf: novoCpf(),
+        email: `transf-${marca}@exemplo.com`,
+        telefone: '61999990000',
+        parentesco: 'Mãe',
+      },
+    })
+    expect(primeira.ok).toBe(true)
+    if (!primeira.ok) return
+
+    const { data: criada } = await admin
+      .from('matriculas')
+      .select('interno_id')
+      .eq('id', primeira.matriculaId)
+      .single()
+
+    const { data: freteDestino } = await admin
+      .from('fretes')
+      .select('valor_centavos')
+      .eq('uf', destino.uf)
+      .single()
+
+    const segunda = await registrarMatriculaParaAlunoExistente({
+      internoId: criada!.interno_id,
+      cursoSlug: 'formacao-para-eletricista',
+      unidadeId: destino.id,
+    })
+    expect(segunda.ok).toBe(true)
+    if (!segunda.ok) return
+
+    const { data: nova } = await admin
+      .from('matriculas')
+      .select('unidade_prisional_id, frete_centavos')
+      .eq('id', segunda.matriculaId)
+      .single()
+
+    expect(nova!.unidade_prisional_id).toBe(destino.id)
+    expect(nova!.frete_centavos).toBe(freteDestino!.valor_centavos)
+
+    // A transferência acompanha o cadastro: a próxima matrícula já nasce na
+    // unidade certa sem ninguém precisar corrigir à mão.
+    const { data: interno } = await admin
+      .from('internos')
+      .select('unidade_prisional_id')
+      .eq('id', criada!.interno_id)
+      .single()
+    expect(interno!.unidade_prisional_id).toBe(destino.id)
   })
 })

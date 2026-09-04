@@ -77,14 +77,13 @@ export async function registrarMatriculaManualNovoAluno(entrada: {
 export async function registrarMatriculaParaAlunoExistente(entrada: {
   internoId: string
   cursoSlug: string
+  unidadeId: string
 }): Promise<ResultadoMatriculaManual> {
   const supabase = criarClienteAdmin()
 
   const { data: interno } = await supabase
     .from('internos')
-    .select(
-      'id, responsavel_id, unidade_prisional_id, unidades_prisionais:unidade_prisional_id (uf)',
-    )
+    .select('id, responsavel_id')
     .eq('id', entrada.internoId)
     .maybeSingle()
 
@@ -93,17 +92,24 @@ export async function registrarMatriculaParaAlunoExistente(entrada: {
     return { ok: false, erro: 'Este aluno não tem responsável vinculado' }
   }
 
+  const { data: unidade } = await supabase
+    .from('unidades_prisionais')
+    .select('id, uf')
+    .eq('id', entrada.unidadeId)
+    .maybeSingle()
+
+  if (!unidade) return { ok: false, erro: 'Unidade prisional não encontrada' }
+
   const { curso, indisponivel } = await obterCurso(entrada.cursoSlug)
   if (indisponivel || !curso) return { ok: false, erro: 'Curso não encontrado' }
 
-  const uf = (interno.unidades_prisionais as unknown as { uf: string } | null)?.uf
-  if (!uf) return { ok: false, erro: 'Unidade do aluno não encontrada' }
-
+  // O frete sai pela unidade escolhida nesta matrícula, não pela do cadastro:
+  // aluno transferido de estado teria frete da unidade antiga.
   let frete: { valorCentavos: number }
   try {
-    frete = await obterFrete(uf)
+    frete = await obterFrete(unidade.uf)
   } catch {
-    return { ok: false, erro: `Frete ainda não configurado para ${uf}.` }
+    return { ok: false, erro: `Frete ainda não configurado para ${unidade.uf}.` }
   }
 
   calcularTotal(curso.precoCentavos, frete.valorCentavos)
@@ -114,7 +120,7 @@ export async function registrarMatriculaParaAlunoExistente(entrada: {
       interno_id: interno.id,
       curso_id: curso.id,
       responsavel_id: interno.responsavel_id,
-      unidade_prisional_id: interno.unidade_prisional_id,
+      unidade_prisional_id: unidade.id,
       preco_centavos: curso.precoCentavos,
       frete_centavos: frete.valorCentavos,
       status: 'rascunho',
@@ -123,6 +129,12 @@ export async function registrarMatriculaParaAlunoExistente(entrada: {
     .single()
 
   if (error || !matricula) return { ok: false, erro: 'Não foi possível criar a matrícula.' }
+
+  // Transferência de unidade acompanha o cadastro do aluno.
+  await supabase
+    .from('internos')
+    .update({ unidade_prisional_id: unidade.id })
+    .eq('id', interno.id)
 
   await confirmarPagamentoManual(matricula.id)
   return { ok: true, matriculaId: matricula.id, codigo: matricula.codigo }
