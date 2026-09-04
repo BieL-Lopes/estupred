@@ -1,7 +1,8 @@
 'use client'
 
 import { useActionState } from 'react'
-import { cadastrarAlunoEMatricula } from '@/app/(admin)/admin/alunos/acoes'
+import { BotaoSubmit } from '@/components/ui/BotaoSubmit'
+import { cadastrarAlunoEMatricula } from '@/app/(admin)/admin/matriculas/acoes'
 import type { ResultadoMatriculaManual } from '@/lib/admin/matricula-manual'
 
 type Unidade = { id: string; uf: string; nome: string }
@@ -10,11 +11,13 @@ type Curso = { slug: string; titulo: string }
 export function FormularioNovoAluno({
   unidades,
   cursos,
+  cpfInicial,
 }: {
   unidades: Unidade[]
   cursos: Curso[]
+  cpfInicial?: string
 }) {
-  const [estado, acao, pendente] = useActionState<
+  const [estado, acao] = useActionState<
     ResultadoMatriculaManual | null,
     FormData
   >(cadastrarAlunoEMatricula, null)
@@ -74,7 +77,12 @@ export function FormularioNovoAluno({
           </label>
           <label className="block">
             <span className="text-sm font-medium text-texto">CPF</span>
-            <input name="cpf" className={campo} required />
+            <input
+              name="cpf"
+              defaultValue={cpfInicial ?? ''}
+              className={campo}
+              required
+            />
           </label>
           <label className="block">
             <span className="text-sm font-medium text-texto">RG</span>
@@ -123,13 +131,9 @@ export function FormularioNovoAluno({
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pendente}
-        className="rounded-lg bg-acento px-5 py-2.5 text-sm font-semibold text-fundo transition hover:bg-acento-claro disabled:opacity-60"
-      >
-        {pendente ? 'Cadastrando…' : 'Cadastrar aluno e matrícula'}
-      </button>
+      <BotaoSubmit className="rounded-lg bg-acento px-5 py-2.5 text-sm font-semibold text-fundo hover:bg-acento-claro">
+        Cadastrar aluno e matrícula
+      </BotaoSubmit>
     </form>
   )
 }

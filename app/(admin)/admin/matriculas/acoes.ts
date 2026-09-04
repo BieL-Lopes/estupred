@@ -66,9 +66,15 @@ export async function matricularAlunoExistente(
 
   const internoId = String(formData.get('internoId') ?? '')
   const cursoSlug = String(formData.get('cursoSlug') ?? '')
+  const unidadeId = String(formData.get('unidadeId') ?? '')
   if (!cursoSlug) return { ok: false, erro: 'Selecione um curso' }
+  if (!unidadeId) return { ok: false, erro: 'Selecione a unidade prisional' }
 
-  const resultado = await registrarMatriculaParaAlunoExistente({ internoId, cursoSlug })
+  const resultado = await registrarMatriculaParaAlunoExistente({
+    internoId,
+    cursoSlug,
+    unidadeId,
+  })
 
   if (!resultado.ok) return resultado
   redirect(`/admin/matriculas/${resultado.matriculaId}`)

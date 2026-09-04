@@ -138,6 +138,7 @@ describe('registrarMatriculaParaAlunoExistente', () => {
     const r = await registrarMatriculaParaAlunoExistente({
       internoId: '00000000-0000-0000-0000-000000000000',
       cursoSlug: 'auxiliar-de-cozinha',
+      unidadeId: await unidadeDf(),
     })
     expect(r).toEqual({ ok: false, erro: 'Aluno não encontrado' })
   })

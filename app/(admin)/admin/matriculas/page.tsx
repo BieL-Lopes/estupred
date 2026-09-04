@@ -16,13 +16,24 @@ export default async function Matriculas({
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-texto">Matrículas</h1>
-        {filtro.status && (
-          <Link href="/admin/matriculas" className="text-sm text-acento hover:underline">
-            Limpar filtro
+        <div className="flex items-center gap-4">
+          {filtro.status && (
+            <Link
+              href="/admin/matriculas"
+              className="text-sm text-acento hover:underline"
+            >
+              Limpar filtro
+            </Link>
+          )}
+          <Link
+            href="/admin/matriculas/nova"
+            className="rounded-lg bg-acento px-4 py-2 text-sm font-semibold text-fundo transition hover:bg-acento-claro"
+          >
+            Matricular aluno
           </Link>
-        )}
+        </div>
       </div>
 
       <div className="mt-8 overflow-x-auto rounded-cartao border border-borda bg-cartao">

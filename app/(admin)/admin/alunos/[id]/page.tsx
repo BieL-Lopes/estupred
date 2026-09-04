@@ -40,15 +40,7 @@ export default async function DetalheAluno({
       </section>
 
       <section className="mt-8 rounded-cartao border border-borda bg-cartao p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-texto">Matrículas</h2>
-          <Link
-            href={`/admin/alunos/${interno.id}/nova-matricula`}
-            className="text-sm font-semibold text-acento hover:underline"
-          >
-            + Nova matrícula
-          </Link>
-        </div>
+        <h2 className="font-semibold text-texto">Matrículas</h2>
 
         <ul className="mt-4 space-y-2">
           {matriculas.map((m) => (
