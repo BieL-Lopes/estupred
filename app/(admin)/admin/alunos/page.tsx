@@ -14,11 +14,19 @@ export default async function Alunos({
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
-      <h1 className="text-2xl font-bold text-texto">Alunos</h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold text-texto">Alunos</h1>
+        <Link
+          href="/admin/alunos/novo"
+          className="rounded-lg bg-acento px-4 py-2 text-sm font-semibold text-fundo transition hover:bg-acento-claro"
+        >
+          Cadastrar aluno
+        </Link>
+      </div>
       <p className="mt-2 text-sm text-texto-suave">
-        Consulta e correção de cadastro. Novas matrículas são feitas na aba{' '}
+        Cadastrar aqui só alimenta a lista de alunos. Para vincular um curso, use{' '}
         <Link href="/admin/matriculas/nova" className="text-acento hover:underline">
-          Matrículas
+          Matricular aluno
         </Link>
         .
       </p>
