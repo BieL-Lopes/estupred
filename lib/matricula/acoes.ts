@@ -11,6 +11,7 @@ import {
 import { obterCurso } from '@/lib/catalogo'
 import { obterFrete } from '@/lib/frete'
 import { garantirInterno } from '@/lib/matricula/interno'
+import { garantirResponsavel } from '@/lib/matricula/responsavel'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
 
 export type ResultadoMatricula =
@@ -60,42 +61,15 @@ export async function criarMatricula(entrada: {
 
   const servidor = criarClienteAdmin()
 
-  // profiles.cpf é único: se o responsável já tem conta (segunda matrícula,
-  // outro curso ou outro interno), reaproveita — criar de novo violaria a
-  // constraint. O acesso continua sendo só por CPF (lib/auth-cpf.ts).
-  const { data: existente } = await servidor
-    .from('profiles')
-    .select('id')
-    .eq('cpf', responsavel.data.cpf)
-    .eq('role', 'responsavel')
-    .maybeSingle()
-
-  let responsavelId: string
-
-  if (existente) {
-    responsavelId = existente.id
-  } else {
-    const { data: criado, error: erroCriacao } = await servidor.auth.admin.createUser({
-      email: responsavel.data.email,
-      // Senha aleatória, nunca usada: o acesso é só por CPF.
-      password: crypto.randomUUID(),
-      email_confirm: true,
-      user_metadata: {
-        nome: responsavel.data.nome,
-        cpf: responsavel.data.cpf,
-        telefone: responsavel.data.telefone,
-      },
-    })
-
-    if (erroCriacao || !criado.user) {
-      if (erroCriacao?.message.toLowerCase().includes('already been registered')) {
-        return { ok: false, erro: 'Este e-mail já está em uso por outra conta.' }
-      }
-      return { ok: false, erro: 'Não foi possível criar seu cadastro. Tente novamente.' }
-    }
-
-    responsavelId = criado.user.id
+  // O site nunca altera o cadastro de quem já tem conta: quem compra de novo
+  // não deve sobrescrever nome e telefone sozinho.
+  const resultadoResponsavel = await garantirResponsavel(responsavel.data, {
+    atualizarCadastro: false,
+  })
+  if (!resultadoResponsavel.ok) {
+    return { ok: false, erro: resultadoResponsavel.erro }
   }
+  const responsavelId = resultadoResponsavel.id
 
   // Segunda compra para a mesma pessoa reaproveita o cadastro em vez de criar
   // um aluno novo — o CPF é a identidade.
