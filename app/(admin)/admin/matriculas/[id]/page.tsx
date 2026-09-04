@@ -187,7 +187,11 @@ export default async function DetalheAdmin({
       <section className="mt-8 rounded-cartao border border-borda bg-cartao p-6">
         <h2 className="font-semibold text-texto">Avançar status</h2>
         <div className="mt-4">
-          <AcoesDeStatus matriculaId={m.id} status={m.status} />
+          <AcoesDeStatus
+            matriculaId={m.id}
+            status={m.status}
+            bloqueio={resultado.bloqueio}
+          />
         </div>
       </section>
 

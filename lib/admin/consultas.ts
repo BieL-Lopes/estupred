@@ -1,5 +1,6 @@
 import 'server-only'
 import type { StatusMatricula } from '@/lib/dominio/tipos'
+import { bloqueioDeEnvio, type MatriculaDaFila } from '@/lib/matricula/fila'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
 
 export async function resumoDoPainel() {
@@ -69,7 +70,7 @@ export async function obterMatriculaAdmin(id: string) {
     .select(
       `
       id, codigo, status, preco_centavos, frete_centavos, total_centavos,
-      created_at, autorizacao_url, data_compra, data_inicio, data_prova,
+      created_at, interno_id, autorizacao_url, data_compra, data_inicio, data_prova,
       cursos:curso_id (titulo, carga_horaria),
       internos:interno_id (nome, cpf, rg, matricula_prisional),
       unidades_prisionais:unidade_prisional_id (nome, uf, endereco, cep, responsavel_nucleo),
@@ -81,20 +82,43 @@ export async function obterMatriculaAdmin(id: string) {
 
   if (!data) return null
 
-  // Nenhuma das duas depende da outra — só do id, que já temos.
-  const [{ data: eventos }, { data: pagamentos }] = await Promise.all([
-    supabase
-      .from('matricula_eventos')
-      .select('de_status, para_status, nota, created_at')
-      .eq('matricula_id', id)
-      .order('created_at'),
-    supabase
-      .from('pagamentos')
-      .select('id, gateway_ref, metodo, status, valor_centavos, pago_em')
-      .eq('matricula_id', id),
-  ])
+  // Nenhuma das três depende da outra — só do id, que já temos.
+  const [{ data: eventos }, { data: pagamentos }, { data: irmas }] =
+    await Promise.all([
+      supabase
+        .from('matricula_eventos')
+        .select('de_status, para_status, nota, created_at')
+        .eq('matricula_id', id)
+        .order('created_at'),
+      supabase
+        .from('pagamentos')
+        .select('id, gateway_ref, metodo, status, valor_centavos, pago_em')
+        .eq('matricula_id', id),
+      supabase
+        .from('matriculas')
+        .select('id, codigo, status, created_at')
+        .eq('interno_id', (data as { interno_id: string }).interno_id),
+    ])
 
-  return { matricula: data, eventos: eventos ?? [], pagamentos: pagamentos ?? [] }
+  // O painel precisa saber, antes de desenhar o botão, se o envio de material
+  // está travado por outro curso do mesmo aluno — botão que só falha depois
+  // do clique é pior do que botão que não aparece.
+  const bloqueio = bloqueioDeEnvio(
+    id,
+    (irmas ?? []).map<MatriculaDaFila>((m) => ({
+      id: m.id,
+      codigo: m.codigo,
+      status: m.status as StatusMatricula,
+      criadaEm: m.created_at,
+    })),
+  )
+
+  return {
+    matricula: data,
+    eventos: eventos ?? [],
+    pagamentos: pagamentos ?? [],
+    bloqueio,
+  }
 }
 
 export type AlunoResumo = {

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { BotaoSubmit } from '@/components/ui/BotaoSubmit'
 import { ROTULO_STATUS, type StatusMatricula } from '@/lib/dominio/tipos'
 import { mudarStatus } from '@/lib/admin/acoes'
@@ -6,9 +7,11 @@ import { proximosStatus } from '@/lib/matricula/transicoes'
 export function AcoesDeStatus({
   matriculaId,
   status,
+  bloqueio,
 }: {
   matriculaId: string
   status: StatusMatricula
+  bloqueio: { id: string; codigo: string } | null
 }) {
   const destinos = proximosStatus(status)
 
@@ -17,6 +20,27 @@ export function AcoesDeStatus({
       <p className="text-sm text-texto-fraco">
         Esta matrícula chegou ao fim do fluxo.
       </p>
+    )
+  }
+
+  // Botão que só falha depois do clique é pior do que botão que não aparece:
+  // o colaborador precisa saber por que não pode enviar, e qual matrícula
+  // está segurando esta.
+  if (bloqueio && destinos.includes('material_enviado')) {
+    return (
+      <div className="rounded-lg border border-aviso/40 bg-aviso-fundo p-4">
+        <p className="text-sm text-aviso">
+          Este aluno já tem um curso em andamento. O material desta matrícula
+          só pode ser enviado depois que o certificado do curso atual for
+          emitido.
+        </p>
+        <Link
+          href={`/admin/matriculas/${bloqueio.id}`}
+          className="mt-2 inline-block text-sm font-semibold text-acento hover:underline"
+        >
+          Ver a matrícula {bloqueio.codigo}
+        </Link>
+      </div>
     )
   }
 

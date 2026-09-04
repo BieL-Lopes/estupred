@@ -6,6 +6,7 @@ import { obterAlunoAdmin } from '@/lib/admin/consultas'
 import { formatarCpf } from '@/lib/dominio/cpf'
 import { formatarBRL } from '@/lib/dominio/precos'
 import type { StatusMatricula } from '@/lib/dominio/tipos'
+import { situacaoDaFila, type MatriculaDaFila } from '@/lib/matricula/fila'
 
 export const metadata = { title: 'Aluno — Clique Estudos' }
 
@@ -19,6 +20,16 @@ export default async function DetalheAluno({
   if (!resultado) notFound()
 
   const { interno, matriculas } = resultado
+
+  const situacao = situacaoDaFila(
+    matriculas.map<MatriculaDaFila>((m) => ({
+      id: m.id,
+      codigo: m.codigo,
+      status: m.status as StatusMatricula,
+      criadaEm: m.created_at,
+    })),
+  )
+  const posicaoNaFila = new Map(situacao.naFila.map((m, i) => [m.id, i + 1]))
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
@@ -54,6 +65,16 @@ export default async function DetalheAluno({
                   {m.cursos?.titulo}
                 </span>
                 <span className="flex items-center gap-3">
+                  {situacao.emCurso?.id === m.id && (
+                    <span className="text-xs font-semibold text-ok">em curso</span>
+                  )}
+                  {posicaoNaFila.has(m.id) && (
+                    <span className="text-xs text-texto-fraco">
+                      {situacao.emCurso
+                        ? `${posicaoNaFila.get(m.id)}º na fila`
+                        : 'próxima'}
+                    </span>
+                  )}
                   <span className="text-sm text-texto-suave">
                     {formatarBRL(m.total_centavos)}
                   </span>
