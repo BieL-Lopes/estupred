@@ -161,3 +161,166 @@ describe('atualizarAluno com CPF já usado', () => {
     expect(data!.cpf).toBe(cpfNovo)
   })
 })
+
+describe('atualizarAluno com responsável', () => {
+  it('vincula um responsável novo a um aluno que não tinha', async () => {
+    const { data: unidade } = await admin
+      .from('unidades_prisionais')
+      .select('id')
+      .limit(1)
+      .single()
+
+    const { data: alvo } = await admin
+      .from('internos')
+      .insert({
+        nome: 'Aluno Sem Responsavel',
+        cpf: novoCpf(),
+        matricula_prisional: 'MP-SEM-RESP',
+        unidade_prisional_id: unidade!.id,
+      })
+      .select('id, cpf')
+      .single()
+
+    const m = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+    const r = await atualizarAluno({
+      id: alvo!.id,
+      nome: 'Aluno Sem Responsavel',
+      cpf: alvo!.cpf,
+      matriculaPrisional: 'MP-SEM-RESP',
+      unidadeId: unidade!.id,
+      responsavel: {
+        nome: 'Responsavel Vinculado',
+        cpf: novoCpf(),
+        email: `vinculado-${m}@exemplo.com`,
+        telefone: '61999990000',
+        parentesco: 'Pai',
+      },
+    })
+
+    expect(r.ok).toBe(true)
+
+    const { data } = await admin
+      .from('internos')
+      .select('parentesco, profiles:responsavel_id (nome)')
+      .eq('id', alvo!.id)
+      .single()
+
+    expect(data!.parentesco).toBe('Pai')
+    expect((data!.profiles as unknown as { nome: string } | null)?.nome).toBe(
+      'Responsavel Vinculado',
+    )
+  })
+
+  it('troca o responsável de um aluno que já tinha outro', async () => {
+    const { data: unidade } = await admin
+      .from('unidades_prisionais')
+      .select('id')
+      .limit(1)
+      .single()
+
+    const m = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+
+    const { data: primeiro } = await admin.auth.admin.createUser({
+      email: `antigo-${m}@exemplo.com`,
+      password: crypto.randomUUID(),
+      email_confirm: true,
+      user_metadata: {
+        nome: 'Responsavel Antigo',
+        cpf: novoCpf(),
+        telefone: '61999991111',
+      },
+    })
+
+    const { data: alvo } = await admin
+      .from('internos')
+      .insert({
+        nome: 'Aluno Trocando Responsavel',
+        cpf: novoCpf(),
+        matricula_prisional: 'MP-TROCA',
+        unidade_prisional_id: unidade!.id,
+        responsavel_id: primeiro.user!.id,
+      })
+      .select('id, cpf')
+      .single()
+
+    // Na tela de edição a troca é o objetivo, não efeito colateral: aqui ela
+    // é permitida, ao contrário do que acontece numa compra.
+    const r = await atualizarAluno({
+      id: alvo!.id,
+      nome: 'Aluno Trocando Responsavel',
+      cpf: alvo!.cpf,
+      matriculaPrisional: 'MP-TROCA',
+      unidadeId: unidade!.id,
+      responsavel: {
+        nome: 'Responsavel Novo',
+        cpf: novoCpf(),
+        email: `novo-${m}@exemplo.com`,
+        telefone: '61988882222',
+        parentesco: 'Esposa',
+      },
+    })
+
+    expect(r.ok).toBe(true)
+
+    const { data } = await admin
+      .from('internos')
+      .select('responsavel_id, profiles:responsavel_id (nome)')
+      .eq('id', alvo!.id)
+      .single()
+
+    expect(data!.responsavel_id).not.toBe(primeiro.user!.id)
+    expect((data!.profiles as unknown as { nome: string } | null)?.nome).toBe(
+      'Responsavel Novo',
+    )
+  })
+
+  it('mantém o responsável quando o bloco vem vazio', async () => {
+    const { data: unidade } = await admin
+      .from('unidades_prisionais')
+      .select('id')
+      .limit(1)
+      .single()
+
+    const m = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+    const { data: perfil } = await admin.auth.admin.createUser({
+      email: `mantido-${m}@exemplo.com`,
+      password: crypto.randomUUID(),
+      email_confirm: true,
+      user_metadata: {
+        nome: 'Responsavel Mantido',
+        cpf: novoCpf(),
+        telefone: '61999993333',
+      },
+    })
+
+    const { data: alvo } = await admin
+      .from('internos')
+      .insert({
+        nome: 'Aluno Mantendo',
+        cpf: novoCpf(),
+        matricula_prisional: 'MP-MANTEM',
+        unidade_prisional_id: unidade!.id,
+        responsavel_id: perfil.user!.id,
+      })
+      .select('id, cpf')
+      .single()
+
+    const r = await atualizarAluno({
+      id: alvo!.id,
+      nome: 'Aluno Mantendo Corrigido',
+      cpf: alvo!.cpf,
+      matriculaPrisional: 'MP-MANTEM',
+      unidadeId: unidade!.id,
+    })
+
+    expect(r.ok).toBe(true)
+
+    const { data } = await admin
+      .from('internos')
+      .select('nome, responsavel_id')
+      .eq('id', alvo!.id)
+      .single()
+    expect(data!.nome).toBe('Aluno Mantendo Corrigido')
+    expect(data!.responsavel_id).toBe(perfil.user!.id)
+  })
+})

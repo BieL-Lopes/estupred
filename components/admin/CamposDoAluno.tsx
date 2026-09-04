@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { CamposDoResponsavel } from '@/components/admin/CamposDoResponsavel'
 import { BotaoSubmit } from '@/components/ui/BotaoSubmit'
 import { salvarAluno } from '@/lib/admin/acoes'
 import type { ResultadoSalvarAluno } from '@/lib/admin/alunos'
@@ -13,6 +14,8 @@ type Aluno = {
   matricula_prisional: string
   data_nascimento: string | null
   unidade_prisional_id: string
+  parentesco: string | null
+  profiles: { nome: string; cpf: string; email: string; telefone: string } | null
 }
 
 export function CamposDoAluno({
@@ -86,6 +89,18 @@ export function CamposDoAluno({
           </select>
         </label>
       </div>
+
+      <CamposDoResponsavel
+        obrigatorio={false}
+        legenda="Responsável pela compra"
+        valores={{
+          nome: aluno.profiles?.nome,
+          cpf: aluno.profiles?.cpf,
+          email: aluno.profiles?.email,
+          telefone: aluno.profiles?.telefone,
+          parentesco: aluno.parentesco ?? undefined,
+        }}
+      />
 
       {estado && !estado.ok && (
         <p role="alert" className="text-sm text-red-400">

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { atualizarAluno, type ResultadoSalvarAluno } from '@/lib/admin/alunos'
 import { exigirAdmin, exigirEquipe } from '@/lib/auth'
+import { EsquemaResponsavel } from '@/lib/dominio/esquemas'
 import { STATUS_MATRICULA, UFS } from '@/lib/dominio/tipos'
 import { avancarStatus } from '@/lib/matricula/avancar'
 import { obterGateway } from '@/lib/pagamento'
@@ -225,7 +226,43 @@ export async function salvarAluno(
     unidadeId: formData.get('unidadeId'),
   })
 
-  const resultado = await atualizarAluno(d)
+  // Os cinco campos do responsável, ou nenhum. Meio preenchido é erro:
+  // garantirResponsavel precisa do CPF para achar e do resto para criar.
+  const camposResponsavel = [
+    'responsavelNome',
+    'responsavelCpf',
+    'responsavelEmail',
+    'responsavelTelefone',
+    'parentesco',
+  ] as const
+
+  const preenchidos = camposResponsavel.filter((c) =>
+    String(formData.get(c) ?? '').trim(),
+  )
+
+  if (preenchidos.length > 0 && preenchidos.length < camposResponsavel.length) {
+    return {
+      ok: false,
+      erro: 'Preencha todos os dados do responsável ou deixe todos em branco.',
+    }
+  }
+
+  let responsavel
+  if (preenchidos.length === camposResponsavel.length) {
+    const analisado = EsquemaResponsavel.safeParse({
+      nome: formData.get('responsavelNome'),
+      cpf: formData.get('responsavelCpf'),
+      email: formData.get('responsavelEmail'),
+      telefone: formData.get('responsavelTelefone'),
+      parentesco: formData.get('parentesco'),
+    })
+    if (!analisado.success) {
+      return { ok: false, erro: analisado.error.issues[0]!.message }
+    }
+    responsavel = analisado.data
+  }
+
+  const resultado = await atualizarAluno({ ...d, responsavel })
   if (!resultado.ok) return resultado
 
   revalidatePath(`/admin/alunos/${d.id}`)

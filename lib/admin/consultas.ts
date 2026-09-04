@@ -181,8 +181,9 @@ export type AlunoDetalhe = {
     matricula_prisional: string
     data_nascimento: string | null
     unidade_prisional_id: string
+    parentesco: string | null
     unidades_prisionais: { nome: string; uf: string; regiao: string | null } | null
-    profiles: { nome: string; email: string; telefone: string } | null
+    profiles: { nome: string; cpf: string; email: string; telefone: string } | null
   }
   matriculas: {
     id: string
@@ -208,8 +209,9 @@ export async function obterAlunoAdmin(id: string): Promise<AlunoDetalhe | null> 
       .select(
         `
         id, nome, cpf, rg, matricula_prisional, data_nascimento, unidade_prisional_id,
+        parentesco,
         unidades_prisionais:unidade_prisional_id (nome, uf, regiao),
-        profiles:responsavel_id (nome, email, telefone)
+        profiles:responsavel_id (nome, cpf, email, telefone)
       `,
       )
       .eq('id', id)

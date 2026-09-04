@@ -9,6 +9,8 @@ type Aluno = {
   matricula_prisional: string
   data_nascimento: string | null
   unidade_prisional_id: string
+  parentesco: string | null
+  profiles: { nome: string; cpf: string; email: string; telefone: string } | null
 }
 
 export async function FormularioAluno({ aluno }: { aluno: Aluno }) {
