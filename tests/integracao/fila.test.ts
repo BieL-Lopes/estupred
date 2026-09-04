@@ -164,10 +164,45 @@ describe('um curso por vez', () => {
 
     const { error } = await admin
       .from('matriculas')
-      .update({ status: 'material_enviado' })
+      .update({ status: 'material_em_producao' })
       .eq('id', segunda!)
 
     expect(error).not.toBeNull()
     expect(error!.message).toContain('curso em andamento')
+  })
+
+  it('o trigger recusa também o salto direto para entregue', async () => {
+    const [primeira, segunda] = await alunoComMatriculasPagas(2)
+    await avancarStatus({ matriculaId: primeira!, para: 'material_em_producao' })
+
+    // Pular etapas por SQL na mão é justamente o que o app não consegue
+    // barrar sozinho — por isso o trigger vigia a entrada em qualquer etapa
+    // que ocupe o aluno, não só a primeira.
+    const { error } = await admin
+      .from('matriculas')
+      .update({ status: 'material_entregue' })
+      .eq('id', segunda!)
+
+    expect(error).not.toBeNull()
+    expect(error!.message).toContain('curso em andamento')
+  })
+
+  it('deixa a matrícula andar entre etapas do próprio material', async () => {
+    const [unica] = await alunoComMatriculasPagas(1)
+
+    for (const para of [
+      'material_em_producao',
+      'material_a_caminho',
+      'material_entregue',
+    ] as const) {
+      await avancarStatus({ matriculaId: unica!, para })
+    }
+
+    const { data } = await admin
+      .from('matriculas')
+      .select('status')
+      .eq('id', unica!)
+      .single()
+    expect(data!.status).toBe('material_entregue')
   })
 })
