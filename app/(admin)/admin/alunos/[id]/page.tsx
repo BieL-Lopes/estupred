@@ -10,6 +10,11 @@ import { situacaoDaFila, type MatriculaDaFila } from '@/lib/matricula/fila'
 
 export const metadata = { title: 'Aluno — Clique Estudos' }
 
+function formatarData(data: string | null): string {
+  if (!data) return '—'
+  return new Date(`${data}T00:00:00`).toLocaleDateString('pt-BR')
+}
+
 export default async function DetalheAluno({
   params,
 }: {
@@ -55,10 +60,10 @@ export default async function DetalheAluno({
 
         <ul className="mt-4 space-y-2">
           {matriculas.map((m) => (
-            <li key={m.id}>
+            <li key={m.id} className="rounded-lg border border-borda">
               <Link
                 href={`/admin/matriculas/${m.id}`}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-borda p-3 hover:border-acento/50"
+                className="flex flex-wrap items-center justify-between gap-2 p-3 hover:bg-cartao-2"
               >
                 <span className="text-sm text-texto">
                   <span className="font-mono text-xs text-texto-fraco">{m.codigo}</span>{' '}
@@ -81,6 +86,29 @@ export default async function DetalheAluno({
                   <Selo status={m.status as StatusMatricula} />
                 </span>
               </Link>
+
+              {(m.data_compra || m.data_inicio || m.data_prova) && (
+                <dl className="flex flex-wrap gap-x-6 gap-y-1 border-t border-borda px-3 py-2 text-xs text-texto-fraco">
+                  <div>
+                    <dt className="inline">Pagamento: </dt>
+                    <dd className="inline text-texto-suave">
+                      {formatarData(m.data_compra)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="inline">Início (entrega): </dt>
+                    <dd className="inline text-texto-suave">
+                      {formatarData(m.data_inicio)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="inline">Prova (45 dias): </dt>
+                    <dd className="inline text-texto-suave">
+                      {formatarData(m.data_prova)}
+                    </dd>
+                  </div>
+                </dl>
+              )}
             </li>
           ))}
         </ul>

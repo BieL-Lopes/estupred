@@ -190,6 +190,9 @@ export type AlunoDetalhe = {
     status: string
     total_centavos: number
     created_at: string
+    data_compra: string | null
+    data_inicio: string | null
+    data_prova: string | null
     cursos: { titulo: string } | null
   }[]
 }
@@ -213,7 +216,9 @@ export async function obterAlunoAdmin(id: string): Promise<AlunoDetalhe | null> 
       .maybeSingle(),
     supabase
       .from('matriculas')
-      .select('id, codigo, status, total_centavos, created_at, cursos:curso_id (titulo)')
+      .select(
+        'id, codigo, status, total_centavos, created_at, data_compra, data_inicio, data_prova, cursos:curso_id (titulo)',
+      )
       .eq('interno_id', id)
       .order('created_at', { ascending: false }),
   ])
