@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { FormularioNovoAluno } from '@/components/admin/FormularioNovoAluno'
 import { FormularioNovaMatricula } from '@/components/admin/FormularioNovaMatricula'
 import { exigirEquipe } from '@/lib/auth'
-import { cpfValido, formatarCpf, normalizarCpf } from '@/lib/dominio/cpf'
+import { formatarCpf, normalizarCpf } from '@/lib/dominio/cpf'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
 
 export const metadata = { title: 'Matricular aluno — Clique Estudos' }
@@ -16,6 +16,11 @@ export default async function NovaMatricula({
   const { cpf: cpfBruto } = await searchParams
   const cpf = cpfBruto ? normalizarCpf(cpfBruto) : ''
   const buscou = cpf.length > 0
+  // Busca por 11 dígitos, não por CPF com dígito verificador correto: o banco
+  // só valida o formato, então cadastro antigo com dígito errado existe e
+  // precisa continuar alcançável. A validação forte fica no cadastro de aluno
+  // novo (EsquemaInterno), que é onde ela impede dado ruim de entrar.
+  const podeBuscar = cpf.length === 11
 
   const supabase = criarClienteAdmin()
   const [{ data: unidades }, { data: cursos }] = await Promise.all([
@@ -29,7 +34,7 @@ export default async function NovaMatricula({
   ])
 
   const { data: aluno } =
-    buscou && cpfValido(cpf)
+    podeBuscar
       ? await supabase
           .from('internos')
           .select('id, nome, cpf, matricula_prisional, unidade_prisional_id')
@@ -68,13 +73,13 @@ export default async function NovaMatricula({
         </button>
       </form>
 
-      {buscou && !cpfValido(cpf) && (
+      {buscou && !podeBuscar && (
         <p role="alert" className="mt-6 text-sm text-red-400">
-          CPF inválido. Confira os números e busque de novo.
+          Informe os 11 números do CPF.
         </p>
       )}
 
-      {buscou && cpfValido(cpf) && aluno && (
+      {podeBuscar && aluno && (
         <section className="mt-8 space-y-6">
           <div className="rounded-cartao border border-borda bg-cartao p-6">
             <h2 className="font-semibold text-texto">Aluno encontrado</h2>
@@ -103,7 +108,7 @@ export default async function NovaMatricula({
         </section>
       )}
 
-      {buscou && cpfValido(cpf) && !aluno && (
+      {podeBuscar && !aluno && (
         <section className="mt-8">
           <p className="text-sm text-texto-suave">
             Nenhum aluno com este CPF. Preencha o cadastro abaixo — ele nasce
