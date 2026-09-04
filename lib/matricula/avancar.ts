@@ -1,6 +1,7 @@
 import 'server-only'
 import type { StatusMatricula } from '@/lib/dominio/tipos'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
+import { bloqueioDeEnvio, type MatriculaDaFila } from './fila'
 import { calcularDataProva } from './prazos'
 import { assertTransicao } from './transicoes'
 
@@ -11,6 +12,16 @@ export type EntradaAvanco = {
   autorId?: string
   /** Só para testes: fixa o "hoje" usado ao carimbar as datas. */
   hoje?: string
+}
+
+export class AlunoOcupadoError extends Error {
+  constructor(readonly bloqueadaPor: { id: string; codigo: string }) {
+    super(
+      `Este aluno já tem um curso em andamento (${bloqueadaPor.codigo}). ` +
+        'O material do próximo só sai depois que o certificado dele for emitido.',
+    )
+    this.name = 'AlunoOcupadoError'
+  }
 }
 
 function hojeIso(): string {
@@ -44,7 +55,7 @@ export async function avancarStatus(entrada: EntradaAvanco): Promise<void> {
 
   const { data: matricula, error: erroLeitura } = await supabase
     .from('matriculas')
-    .select('id, status')
+    .select('id, status, interno_id')
     .eq('id', entrada.matriculaId)
     .single()
 
@@ -54,6 +65,27 @@ export async function avancarStatus(entrada: EntradaAvanco): Promise<void> {
 
   const de = matricula.status as StatusMatricula
   assertTransicao(de, entrada.para)
+
+  // A regra de um curso por vez trava aqui, no envio de material, porque é o
+  // primeiro passo que gasta dinheiro: até a matrícula paga nada saiu da
+  // gráfica. O trigger no banco recusa o mesmo caso; esta checagem existe
+  // para o painel poder mostrar o motivo antes de o colaborador clicar.
+  if (entrada.para === 'material_enviado') {
+    const { data: irmas } = await supabase
+      .from('matriculas')
+      .select('id, codigo, status, created_at')
+      .eq('interno_id', matricula.interno_id)
+
+    const lista: MatriculaDaFila[] = (irmas ?? []).map((m) => ({
+      id: m.id,
+      codigo: m.codigo,
+      status: m.status as StatusMatricula,
+      criadaEm: m.created_at,
+    }))
+
+    const bloqueio = bloqueioDeEnvio(entrada.matriculaId, lista)
+    if (bloqueio) throw new AlunoOcupadoError(bloqueio)
+  }
 
   const hoje = entrada.hoje ?? hojeIso()
 
