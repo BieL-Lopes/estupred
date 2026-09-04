@@ -70,10 +70,22 @@ export async function matricularAlunoExistente(
   if (!cursoSlug) return { ok: false, erro: 'Selecione um curso' }
   if (!unidadeId) return { ok: false, erro: 'Selecione a unidade prisional' }
 
+  const responsavel = EsquemaResponsavel.safeParse({
+    nome: formData.get('responsavelNome'),
+    cpf: formData.get('responsavelCpf'),
+    email: formData.get('responsavelEmail'),
+    telefone: formData.get('responsavelTelefone'),
+    parentesco: formData.get('parentesco'),
+  })
+  if (!responsavel.success) {
+    return { ok: false, erro: responsavel.error.issues[0]!.message }
+  }
+
   const resultado = await registrarMatriculaParaAlunoExistente({
     internoId,
     cursoSlug,
     unidadeId,
+    responsavel: responsavel.data,
   })
 
   if (!resultado.ok) return resultado

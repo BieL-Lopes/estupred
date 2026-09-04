@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { CamposDoResponsavel } from '@/components/admin/CamposDoResponsavel'
 import { BotaoSubmit } from '@/components/ui/BotaoSubmit'
 import { matricularAlunoExistente } from '@/app/(admin)/admin/matriculas/acoes'
 import type { ResultadoMatriculaManual } from '@/lib/admin/matricula-manual'
@@ -13,11 +14,19 @@ export function FormularioNovaMatricula({
   cursos,
   unidades,
   unidadeAtualId,
+  responsavelAtual,
 }: {
   internoId: string
   cursos: Curso[]
   unidades: Unidade[]
   unidadeAtualId: string
+  responsavelAtual?: {
+    nome: string
+    cpf: string
+    email: string
+    telefone: string
+    parentesco?: string
+  }
 }) {
   const [estado, acao] = useActionState<ResultadoMatriculaManual | null, FormData>(
     matricularAlunoExistente,
@@ -62,6 +71,17 @@ export function FormularioNovaMatricula({
           o frete e a entrega do material seguem esta escolha.
         </span>
       </label>
+
+      <CamposDoResponsavel
+        obrigatorio
+        legenda="Responsável pela compra"
+        valores={responsavelAtual}
+      />
+      <p className="text-xs text-texto-fraco">
+        Vem preenchido com o responsável do cadastro. Troque se quem está
+        pagando esta compra for outra pessoa — o Portal do Aluno mostra a
+        matrícula para quem pagou.
+      </p>
 
       {estado && !estado.ok && (
         <p role="alert" className="text-sm text-red-400">

@@ -121,6 +121,13 @@ describe('registrarMatriculaParaAlunoExistente', () => {
       internoId: interno!.id,
       cursoSlug: 'formacao-para-eletricista',
       unidadeId: interno!.unidade_prisional_id,
+      responsavel: {
+        nome: 'Responsavel Do Teste',
+        cpf: novoCpf(),
+        email: `resp-${Date.now()}-${Math.random().toString(36).slice(2)}@exemplo.com`,
+        telefone: '61999997777',
+        parentesco: 'Mãe',
+      },
     })
     expect(segunda.ok).toBe(true)
 
@@ -130,7 +137,6 @@ describe('registrarMatriculaParaAlunoExistente', () => {
       .eq('interno_id', interno!.id)
 
     expect(matriculas!.length).toBe(2)
-    expect(matriculas!.every((m) => m.responsavel_id === interno!.responsavel_id)).toBe(true)
     expect(matriculas!.every((m) => m.status === 'paga')).toBe(true)
   })
 
@@ -139,6 +145,13 @@ describe('registrarMatriculaParaAlunoExistente', () => {
       internoId: '00000000-0000-0000-0000-000000000000',
       cursoSlug: 'auxiliar-de-cozinha',
       unidadeId: await unidadeDf(),
+      responsavel: {
+        nome: 'Responsavel Do Teste',
+        cpf: novoCpf(),
+        email: `resp-${Date.now()}-${Math.random().toString(36).slice(2)}@exemplo.com`,
+        telefone: '61999997777',
+        parentesco: 'Mãe',
+      },
     })
     expect(r).toEqual({ ok: false, erro: 'Aluno não encontrado' })
   })
@@ -206,6 +219,13 @@ describe('registrarMatriculaParaAlunoExistente com unidade escolhida', () => {
       internoId: criada!.interno_id,
       cursoSlug: 'formacao-para-eletricista',
       unidadeId: destino.id,
+      responsavel: {
+        nome: 'Responsavel Do Teste',
+        cpf: novoCpf(),
+        email: `resp-${Date.now()}-${Math.random().toString(36).slice(2)}@exemplo.com`,
+        telefone: '61999997777',
+        parentesco: 'Mãe',
+      },
     })
     expect(segunda.ok).toBe(true)
     if (!segunda.ok) return
@@ -227,5 +247,136 @@ describe('registrarMatriculaParaAlunoExistente com unidade escolhida', () => {
       .eq('id', criada!.interno_id)
       .single()
     expect(interno!.unidade_prisional_id).toBe(destino.id)
+  })
+})
+
+describe('registrarMatriculaParaAlunoExistente com responsável próprio', () => {
+  it('grava o comprador na matrícula sem trocar o do cadastro', async () => {
+    const marca = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+
+    const { data: unidade } = await admin
+      .from('unidades_prisionais')
+      .insert({
+        uf: 'DF',
+        nome: `Unidade Comprador ${marca}`,
+        endereco: 'Rua do Comprador, 1',
+        cep: '70000000',
+      })
+      .select('id')
+      .single()
+
+    const primeira = await registrarMatriculaManualNovoAluno({
+      cursoSlug: 'auxiliar-de-cozinha',
+      unidade: { uf: 'DF', unidadeId: unidade!.id },
+      interno: {
+        nome: 'Aluno Dois Compradores',
+        cpf: novoCpf(),
+        matriculaPrisional: `MP-2COMP-${marca}`,
+      },
+      responsavel: {
+        nome: 'Mae Compradora',
+        cpf: novoCpf(),
+        email: `mae-${marca}@exemplo.com`,
+        telefone: '61999990000',
+        parentesco: 'Mãe',
+      },
+    })
+    expect(primeira.ok).toBe(true)
+    if (!primeira.ok) return
+
+    const { data: criada } = await admin
+      .from('matriculas')
+      .select('interno_id, responsavel_id')
+      .eq('id', primeira.matriculaId)
+      .single()
+
+    const segunda = await registrarMatriculaParaAlunoExistente({
+      internoId: criada!.interno_id,
+      cursoSlug: 'formacao-para-eletricista',
+      unidadeId: unidade!.id,
+      responsavel: {
+        nome: 'Esposa Compradora',
+        cpf: novoCpf(),
+        email: `esposa-${marca}@exemplo.com`,
+        telefone: '61988881111',
+        parentesco: 'Esposa',
+      },
+    })
+    expect(segunda.ok).toBe(true)
+    if (!segunda.ok) return
+
+    const { data: nova } = await admin
+      .from('matriculas')
+      .select('responsavel_id, profiles:responsavel_id (nome)')
+      .eq('id', segunda.matriculaId)
+      .single()
+
+    // A segunda compra é da esposa.
+    expect((nova!.profiles as unknown as { nome: string }).nome).toBe(
+      'Esposa Compradora',
+    )
+    expect(nova!.responsavel_id).not.toBe(criada!.responsavel_id)
+
+    // E o cadastro do aluno continua com quem comprou primeiro: numa compra,
+    // trocar o responsável do cadastro seria efeito colateral.
+    const { data: interno } = await admin
+      .from('internos')
+      .select('profiles:responsavel_id (nome)')
+      .eq('id', criada!.interno_id)
+      .single()
+    expect((interno!.profiles as unknown as { nome: string }).nome).toBe(
+      'Mae Compradora',
+    )
+  })
+
+  it('preenche o responsável do cadastro quando o aluno ainda não tinha', async () => {
+    const marca = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+
+    const { data: unidade } = await admin
+      .from('unidades_prisionais')
+      .insert({
+        uf: 'DF',
+        nome: `Unidade Pre Cadastro ${marca}`,
+        endereco: 'Rua do Pre, 1',
+        cep: '70000000',
+      })
+      .select('id')
+      .single()
+
+    const { data: interno } = await admin
+      .from('internos')
+      .insert({
+        nome: 'Aluno Pre Sem Responsavel',
+        cpf: novoCpf(),
+        matricula_prisional: `MP-PRE-${marca}`,
+        unidade_prisional_id: unidade!.id,
+      })
+      .select('id')
+      .single()
+
+    const r = await registrarMatriculaParaAlunoExistente({
+      internoId: interno!.id,
+      cursoSlug: 'auxiliar-de-cozinha',
+      unidadeId: unidade!.id,
+      responsavel: {
+        nome: 'Primeiro Comprador',
+        cpf: novoCpf(),
+        email: `primeiro-${marca}@exemplo.com`,
+        telefone: '61999992222',
+        parentesco: 'Irmão',
+      },
+    })
+    expect(r.ok).toBe(true)
+
+    const { data } = await admin
+      .from('internos')
+      .select('parentesco, profiles:responsavel_id (nome)')
+      .eq('id', interno!.id)
+      .single()
+
+    expect((data!.profiles as unknown as { nome: string }).nome).toBe(
+      'Primeiro Comprador',
+    )
+    expect(data!.parentesco).toBe('Irmão')
   })
 })

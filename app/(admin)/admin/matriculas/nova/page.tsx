@@ -37,7 +37,9 @@ export default async function NovaMatricula({
     podeBuscar
       ? await supabase
           .from('internos')
-          .select('id, nome, cpf, matricula_prisional, unidade_prisional_id')
+          .select(
+            'id, nome, cpf, matricula_prisional, unidade_prisional_id, parentesco, profiles:responsavel_id (nome, cpf, email, telefone)',
+          )
           .eq('cpf', cpf)
           .maybeSingle()
       : { data: null }
@@ -104,6 +106,19 @@ export default async function NovaMatricula({
             cursos={cursos ?? []}
             unidades={unidades ?? []}
             unidadeAtualId={aluno.unidade_prisional_id}
+            responsavelAtual={
+              aluno.profiles
+                ? {
+                    ...(aluno.profiles as unknown as {
+                      nome: string
+                      cpf: string
+                      email: string
+                      telefone: string
+                    }),
+                    parentesco: aluno.parentesco ?? undefined,
+                  }
+                : undefined
+            }
           />
         </section>
       )}

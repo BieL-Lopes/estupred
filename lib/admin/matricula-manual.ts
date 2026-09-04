@@ -7,6 +7,7 @@ import type {
   DadosUnidade,
 } from '@/lib/dominio/esquemas'
 import { obterFrete } from '@/lib/frete'
+import { garantirResponsavel } from '@/lib/matricula/responsavel'
 import { criarMatricula } from '@/lib/matricula/acoes'
 import { avancarStatus } from '@/lib/matricula/avancar'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
@@ -78,6 +79,7 @@ export async function registrarMatriculaParaAlunoExistente(entrada: {
   internoId: string
   cursoSlug: string
   unidadeId: string
+  responsavel: DadosResponsavel
 }): Promise<ResultadoMatriculaManual> {
   const supabase = criarClienteAdmin()
 
@@ -88,9 +90,13 @@ export async function registrarMatriculaParaAlunoExistente(entrada: {
     .maybeSingle()
 
   if (!interno) return { ok: false, erro: 'Aluno não encontrado' }
-  if (!interno.responsavel_id) {
-    return { ok: false, erro: 'Este aluno não tem responsável vinculado' }
-  }
+
+  // Quem paga esta compra pode não ser quem pagou a anterior: a mãe comprou o
+  // primeiro curso, a esposa compra o segundo.
+  const comprador = await garantirResponsavel(entrada.responsavel, {
+    atualizarCadastro: true,
+  })
+  if (!comprador.ok) return { ok: false, erro: comprador.erro }
 
   const { data: unidade } = await supabase
     .from('unidades_prisionais')
@@ -119,7 +125,7 @@ export async function registrarMatriculaParaAlunoExistente(entrada: {
     .insert({
       interno_id: interno.id,
       curso_id: curso.id,
-      responsavel_id: interno.responsavel_id,
+      responsavel_id: comprador.id,
       unidade_prisional_id: unidade.id,
       preco_centavos: curso.precoCentavos,
       frete_centavos: frete.valorCentavos,
@@ -130,10 +136,20 @@ export async function registrarMatriculaParaAlunoExistente(entrada: {
 
   if (error || !matricula) return { ok: false, erro: 'Não foi possível criar a matrícula.' }
 
-  // Transferência de unidade acompanha o cadastro do aluno.
+  // Transferência de unidade acompanha o cadastro do aluno. O responsável só
+  // é preenchido quando está nulo: numa compra, trocar o responsável do
+  // cadastro seria efeito colateral, e tiraria de quem comprou primeiro.
   await supabase
     .from('internos')
-    .update({ unidade_prisional_id: unidade.id })
+    .update({
+      unidade_prisional_id: unidade.id,
+      ...(interno.responsavel_id
+        ? {}
+        : {
+            responsavel_id: comprador.id,
+            parentesco: entrada.responsavel.parentesco,
+          }),
+    })
     .eq('id', interno.id)
 
   await confirmarPagamentoManual(matricula.id)
