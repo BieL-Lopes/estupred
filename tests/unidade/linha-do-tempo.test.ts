@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { montarLinhaDoTempo } from '@/lib/matricula/consultas'
 
 describe('montarLinhaDoTempo', () => {
-  it('mostra as seis etapas mesmo no começo', () => {
+  it('mostra as oito etapas mesmo no começo', () => {
     const etapas = montarLinhaDoTempo('aguardando_pagamento', [])
     expect(etapas.map((e) => e.status)).toEqual([
       'aguardando_pagamento',
       'paga',
-      'material_enviado',
+      'material_em_producao',
+      'material_a_caminho',
+      'material_entregue',
       'prova_aplicada',
       'aprovado',
       'certificado_emitido',
@@ -15,12 +17,14 @@ describe('montarLinhaDoTempo', () => {
   })
 
   it('marca a etapa atual e deixa as seguintes como futuras', () => {
-    const etapas = montarLinhaDoTempo('material_enviado', [])
+    const etapas = montarLinhaDoTempo('material_a_caminho', [])
     const porStatus = Object.fromEntries(etapas.map((e) => [e.status, e.estado]))
 
     expect(porStatus.aguardando_pagamento).toBe('concluida')
     expect(porStatus.paga).toBe('concluida')
-    expect(porStatus.material_enviado).toBe('atual')
+    expect(porStatus.material_em_producao).toBe('concluida')
+    expect(porStatus.material_a_caminho).toBe('atual')
+    expect(porStatus.material_entregue).toBe('futura')
     expect(porStatus.prova_aplicada).toBe('futura')
     expect(porStatus.certificado_emitido).toBe('futura')
   })
@@ -52,5 +56,17 @@ describe('montarLinhaDoTempo', () => {
 
   it('devolve lista vazia para matrícula cancelada', () => {
     expect(montarLinhaDoTempo('cancelada', [])).toEqual([])
+  })
+
+  it('posiciona uma matrícula antiga em material_enviado na etapa de entrega', () => {
+    // material_enviado saiu da lista de etapas. Sem tratamento, indexOf
+    // devolveria -1 e a família veria tudo como futuro — uma matrícula já
+    // entregue apareceria como se nada tivesse começado.
+    const etapas = montarLinhaDoTempo('material_enviado', [])
+    const porStatus = Object.fromEntries(etapas.map((e) => [e.status, e.estado]))
+
+    expect(porStatus.material_entregue).toBe('atual')
+    expect(porStatus.paga).toBe('concluida')
+    expect(porStatus.prova_aplicada).toBe('futura')
   })
 })

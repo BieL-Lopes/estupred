@@ -29,14 +29,28 @@ export type EtapaLinha = {
 const ETAPAS: readonly StatusMatricula[] = [
   'aguardando_pagamento',
   'paga',
-  'material_enviado',
+  'material_em_producao',
+  'material_a_caminho',
+  'material_entregue',
   'prova_aplicada',
   'aprovado',
   'certificado_emitido',
 ]
 
 /**
- * Monta as seis etapas visíveis na Área do Aluno a partir do status atual e
+ * Status que não aparecem como etapa própria e precisam ser desenhados na
+ * etapa de outro. Sem isso, `indexOf` devolveria -1 e a linha do tempo
+ * inteira apareceria como futura.
+ */
+const EQUIVALENTE: Partial<Record<StatusMatricula, StatusMatricula>> = {
+  // Recuperação: visualmente continua na etapa da prova, com o rótulo avisando.
+  reprovado: 'prova_aplicada',
+  // Etapa aposentada, que significava entrega na unidade.
+  material_enviado: 'material_entregue',
+}
+
+/**
+ * Monta as oito etapas visíveis na Área do Aluno a partir do status atual e
  * da trilha de eventos. Pura, sem I/O — testável direto.
  */
 export function montarLinhaDoTempo(
@@ -45,9 +59,7 @@ export function montarLinhaDoTempo(
 ): EtapaLinha[] {
   if (status === 'cancelada') return []
 
-  // Reprovado é recuperação: visualmente a matrícula continua na etapa da
-  // prova, só que com o rótulo avisando.
-  const efetivo: StatusMatricula = status === 'reprovado' ? 'prova_aplicada' : status
+  const efetivo: StatusMatricula = EQUIVALENTE[status] ?? status
   const atual = ETAPAS.indexOf(efetivo)
 
   return ETAPAS.map((etapa, indice) => {
