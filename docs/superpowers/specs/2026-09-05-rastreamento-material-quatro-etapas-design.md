@@ -133,7 +133,33 @@ ele registrou, não o que aconteceu. A alternativa (campo de data retroativa em
 cada passo) foi considerada e recusada na conversa, em favor de ordem estrita
 sem campo extra.
 
-## 3. As telas
+## 3. Quem pode marcar cada etapa
+
+Marcar **"material em produção" é exclusivo do admin**. As demais transições
+continuam abertas a toda a equipe (admin ou colaborador), como hoje.
+
+A razão é operacional: a produção é o passo que compromete dinheiro, e quem
+sabe que a gráfica começou a confecção é quem fala com ela. O colaborador
+acompanha e registra envio e entrega; abrir a produção é decisão de quem
+autoriza o gasto.
+
+Isso muda `mudarStatus` em `lib/admin/acoes.ts`, que hoje chama `exigirEquipe()`
+para qualquer transição. Passa a escolher a checagem pela transição pedida:
+`exigirAdmin()` quando o destino é `material_em_producao`, `exigirEquipe()` nos
+demais. A checagem no servidor é a barreira real — uma Server Action é um
+endpoint HTTP por si só, e esconder o botão não protege nada sozinho.
+
+Na tela, `AcoesDeStatus` recebe o papel do usuário e, para um colaborador numa
+matrícula em `paga`, mostra no lugar do botão o aviso de que a produção precisa
+ser liberada por um administrador. Botão que só falha depois do clique é pior
+do que botão que não aparece — o mesmo princípio já aplicado ao bloqueio da
+fila.
+
+Decisão marcada como **"por enquanto"**: se o cliente depois quiser que o
+colaborador também libere produção, a mudança é trocar uma linha na escolha da
+checagem.
+
+## 4. As telas
 
 **Painel.** O `Selo` ganha cor para os três valores novos: as três etapas de
 material em laranja, a cor de "em progresso", com o verde continuando reservado
@@ -159,7 +185,7 @@ mapeado para `material_entregue`.
 `situacaoDaFila`, que passa a cobrir as etapas novas pela mudança em
 `STATUS_EM_CURSO`. Nenhuma alteração além da constante.
 
-## Testes
+## 5. Testes
 
 **Unitários:**
 
@@ -179,7 +205,11 @@ mapeado para `material_entregue`.
 - `avancarStatus` recusa a produção de um segundo curso com erro legível;
 - o trigger recusa o mesmo caso, e recusa também um salto direto para
   `material_entregue` escrito por fora do app;
-- uma matrícula deixada em `material_enviado` continua ocupando o aluno.
+- uma matrícula deixada em `material_enviado` continua ocupando o aluno;
+- `exigirAdmin` é a checagem usada quando o destino é `material_em_producao`, e
+  `exigirEquipe` nos demais destinos. Como as duas dependem de `cookies()`, o
+  teste cobre a função pura que escolhe qual checagem cada transição exige, não
+  as checagens em si.
 
 **Navegador**, em produção: percorrer as quatro etapas numa matrícula de teste,
 conferindo que ao entregar o selo diz "Curso em andamento" e a data da prova
@@ -191,3 +221,4 @@ aparece como entrega mais 45.
 - Notificação à família a cada mudança de etapa.
 - Rastreio de transportadora ou código de postagem.
 - Remoção do valor `material_enviado` do enum do Postgres.
+- Tornar configurável quem pode liberar produção: hoje é decisão de código.
