@@ -3,6 +3,17 @@ import type { StatusMatricula } from '@/lib/dominio/tipos'
 import { bloqueioDeProducao, type MatriculaDaFila } from '@/lib/matricula/fila'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
 
+/**
+ * Normaliza o termo digitado antes de entrar num filtro do PostgREST.
+ *
+ * Vírgula separa condições dentro de `.or()` e parênteses delimitam listas.
+ * Um termo como "Silva, João" viraria filtro inválido, e a consulta falharia
+ * calada — devolvendo tudo ou nada, sem erro visível na tela.
+ */
+export function termoDeBusca(bruto?: string): string {
+  return (bruto ?? '').replace(/[,()]/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
 export async function resumoDoPainel() {
   const supabase = criarClienteAdmin()
 
@@ -38,8 +49,26 @@ export async function resumoDoPainel() {
   return { porStatus, receitaMesCentavos, pagamentosOrfaos: count ?? 0 }
 }
 
-export async function listarMatriculasAdmin(filtro?: { status?: string }) {
+export async function listarMatriculasAdmin(filtro?: {
+  status?: string
+  busca?: string
+}) {
   const supabase = criarClienteAdmin()
+  const busca = termoDeBusca(filtro?.busca)
+
+  // O que se procura numa matrícula é o código ou o nome do aluno, e o nome
+  // mora em `internos`. O PostgREST não faz `OR` misturando coluna própria
+  // com coluna de tabela embutida, então os ids do aluno vêm antes, numa
+  // consulta que lê só a chave.
+  let idsDeAlunos: string[] = []
+  if (busca) {
+    const { data } = await supabase
+      .from('internos')
+      .select('id')
+      .ilike('nome', `%${busca}%`)
+      .limit(200)
+    idsDeAlunos = (data ?? []).map((i) => i.id)
+  }
 
   let consulta = supabase
     .from('matriculas')
@@ -56,6 +85,50 @@ export async function listarMatriculasAdmin(filtro?: { status?: string }) {
 
   if (filtro?.status) {
     consulta = consulta.eq('status', filtro.status as StatusMatricula)
+  }
+
+  if (busca) {
+    consulta = idsDeAlunos.length
+      ? consulta.or(
+          `codigo.ilike.%${busca}%,interno_id.in.(${idsDeAlunos.join(',')})`,
+        )
+      : consulta.ilike('codigo', `%${busca}%`)
+  }
+
+  const { data } = await consulta
+  return data ?? []
+}
+
+export async function listarCursosAdmin(filtro?: { busca?: string }) {
+  const supabase = criarClienteAdmin()
+  const busca = termoDeBusca(filtro?.busca)
+
+  let consulta = supabase.from('cursos').select('*').order('titulo')
+
+  if (busca) {
+    consulta = consulta.or(
+      `titulo.ilike.%${busca}%,slug.ilike.%${busca}%,categoria.ilike.%${busca}%`,
+    )
+  }
+
+  const { data } = await consulta
+  return data ?? []
+}
+
+export async function listarUnidadesAdmin(filtro?: { busca?: string }) {
+  const supabase = criarClienteAdmin()
+  const busca = termoDeBusca(filtro?.busca)
+
+  let consulta = supabase
+    .from('unidades_prisionais')
+    .select('*')
+    .order('uf')
+    .order('nome')
+
+  if (busca) {
+    consulta = consulta.or(
+      `nome.ilike.%${busca}%,uf.ilike.%${busca}%,regiao.ilike.%${busca}%`,
+    )
   }
 
   const { data } = await consulta
@@ -146,8 +219,9 @@ export async function listarAlunosAdmin(filtro?: {
     )
     .order('nome')
 
-  if (filtro?.busca) {
-    consulta = consulta.or(`nome.ilike.%${filtro.busca}%,cpf.eq.${filtro.busca}`)
+  const busca = termoDeBusca(filtro?.busca)
+  if (busca) {
+    consulta = consulta.or(`nome.ilike.%${busca}%,cpf.eq.${busca}`)
   }
 
   const { data } = await consulta

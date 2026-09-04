@@ -9,7 +9,7 @@ export const metadata = { title: 'Matrículas — Clique Estudos' }
 export default async function Matriculas({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ status?: string; busca?: string }>
 }) {
   const filtro = await searchParams
   const matriculas = await listarMatriculasAdmin(filtro)
@@ -35,6 +35,18 @@ export default async function Matriculas({
           </Link>
         </div>
       </div>
+
+      <form className="mt-6 flex flex-wrap gap-2">
+        {filtro.status && (
+          <input type="hidden" name="status" value={filtro.status} />
+        )}
+        <input
+          name="busca"
+          defaultValue={filtro.busca ?? ''}
+          placeholder="Buscar por código ou nome do aluno"
+          className="w-full max-w-sm rounded-lg border border-borda bg-cartao px-3 py-2 text-sm text-texto placeholder:text-texto-fraco"
+        />
+      </form>
 
       <div className="mt-8 overflow-x-auto rounded-cartao border border-borda bg-cartao">
         <table className="w-full min-w-[720px] text-sm">

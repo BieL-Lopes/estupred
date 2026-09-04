@@ -1,6 +1,6 @@
 import { exigirAdmin } from '@/lib/auth'
 import { FormularioUnidade } from '@/components/admin/FormularioUnidade'
-import { criarClienteAdmin } from '@/lib/supabase/admin'
+import { listarUnidadesAdmin } from '@/lib/admin/consultas'
 
 export const metadata = { title: 'Unidades — Clique Estudos' }
 
@@ -31,17 +31,16 @@ function agruparPorRegiao(unidades: Unidade[]): [string, Unidade[]][] {
   })
 }
 
-export default async function UnidadesAdmin() {
+export default async function UnidadesAdmin({
+  searchParams,
+}: {
+  searchParams: Promise<{ busca?: string }>
+}) {
   await exigirAdmin()
 
-  const supabase = criarClienteAdmin()
-  const { data } = await supabase
-    .from('unidades_prisionais')
-    .select('*')
-    .order('uf')
-    .order('nome')
-
-  const grupos = agruparPorRegiao((data ?? []) as Unidade[])
+  const { busca } = await searchParams
+  const data = await listarUnidadesAdmin({ busca })
+  const grupos = agruparPorRegiao(data as Unidade[])
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
@@ -53,6 +52,21 @@ export default async function UnidadesAdmin() {
           <FormularioUnidade />
         </div>
       </details>
+
+      <form className="mt-8">
+        <input
+          name="busca"
+          defaultValue={busca ?? ''}
+          placeholder="Buscar por nome, UF ou região"
+          className="w-full max-w-sm rounded-lg border border-borda bg-cartao px-3 py-2 text-sm text-texto placeholder:text-texto-fraco"
+        />
+      </form>
+
+      {grupos.length === 0 && (
+        <p className="mt-8 text-sm text-texto-fraco">
+          Nenhuma unidade encontrada.
+        </p>
+      )}
 
       {grupos.map(([regiao, unidades]) => (
         <section key={regiao} className="mt-10">

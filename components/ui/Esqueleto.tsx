@@ -156,10 +156,12 @@ export function EsqueletoLista({
   largura = 'max-w-4xl',
   linhas = 8,
   comSubtitulo = false,
+  comBusca = false,
 }: {
   largura?: string
   linhas?: number
   comSubtitulo?: boolean
+  comBusca?: boolean
 }) {
   return (
     <Moldura largura={largura}>
@@ -170,7 +172,9 @@ export function EsqueletoLista({
         <Barra className="h-4 w-32" />
       </div>
 
-      <div className="mt-8 space-y-3">
+      {comBusca && <Barra className="mt-8 h-10 w-full max-w-sm" />}
+
+      <div className="mt-6 space-y-3">
         {Array.from({ length: linhas }).map((_, i) => (
           <div
             key={i}
