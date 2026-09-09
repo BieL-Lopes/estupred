@@ -69,7 +69,7 @@ async function matriculaNoStatus(
 describe('datas carimbadas pela transição', () => {
   it('grava a data da compra ao confirmar o pagamento', async () => {
     const m = await matriculaNoStatus('aguardando_pagamento')
-    await avancarStatus({ matriculaId: m.id, para: 'paga', hoje: '2026-03-10' })
+    await avancarStatus({ matriculaId: m.id, para: 'paga', dataDoFato: '2026-03-10' })
 
     const { data } = await admin
       .from('matriculas')
@@ -89,12 +89,12 @@ describe('datas carimbadas pela transição', () => {
     await avancarStatus({
       matriculaId: m.id,
       para: 'material_em_producao',
-      hoje: '2026-01-05',
+      dataDoFato: '2026-01-05',
     })
     await avancarStatus({
       matriculaId: m.id,
       para: 'material_a_caminho',
-      hoje: '2026-01-06',
+      dataDoFato: '2026-01-06',
     })
 
     const { data: antes } = await admin
@@ -111,7 +111,7 @@ describe('datas carimbadas pela transição', () => {
     await avancarStatus({
       matriculaId: m.id,
       para: 'material_entregue',
-      hoje: '2026-01-07',
+      dataDoFato: '2026-01-07',
     })
 
     const { data } = await admin
@@ -128,13 +128,13 @@ describe('datas carimbadas pela transição', () => {
 
   it('a data da compra é diferente da data de início, como o cliente pediu', async () => {
     const m = await matriculaNoStatus('aguardando_pagamento')
-    await avancarStatus({ matriculaId: m.id, para: 'paga', hoje: '2026-01-05' })
+    await avancarStatus({ matriculaId: m.id, para: 'paga', dataDoFato: '2026-01-05' })
     for (const para of [
       'material_em_producao',
       'material_a_caminho',
       'material_entregue',
     ] as const) {
-      await avancarStatus({ matriculaId: m.id, para, hoje: '2026-02-02' })
+      await avancarStatus({ matriculaId: m.id, para, dataDoFato: '2026-02-02' })
     }
 
     const { data } = await admin
@@ -151,18 +151,18 @@ describe('datas carimbadas pela transição', () => {
 
   it('não sobrescreve a data de compra em transições posteriores', async () => {
     const m = await matriculaNoStatus('aguardando_pagamento')
-    await avancarStatus({ matriculaId: m.id, para: 'paga', hoje: '2026-01-05' })
+    await avancarStatus({ matriculaId: m.id, para: 'paga', dataDoFato: '2026-01-05' })
     for (const para of [
       'material_em_producao',
       'material_a_caminho',
       'material_entregue',
     ] as const) {
-      await avancarStatus({ matriculaId: m.id, para, hoje: '2026-02-02' })
+      await avancarStatus({ matriculaId: m.id, para, dataDoFato: '2026-02-02' })
     }
     await avancarStatus({
       matriculaId: m.id,
       para: 'prova_aplicada',
-      hoje: '2026-03-19',
+      dataDoFato: '2026-03-19',
     })
 
     const { data } = await admin

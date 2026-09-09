@@ -6,7 +6,9 @@ import { atualizarAluno, type ResultadoSalvarAluno } from '@/lib/admin/alunos'
 import { exigirAdmin, exigirEquipe } from '@/lib/auth'
 import { EsquemaResponsavel } from '@/lib/dominio/esquemas'
 import { STATUS_MATRICULA, UFS } from '@/lib/dominio/tipos'
+import { corrigirDataDeEntrega, type ResultadoCorrecao } from '@/lib/admin/datas'
 import { avancarStatus } from '@/lib/matricula/avancar'
+import { validarDataDeEntrega } from '@/lib/matricula/datas'
 import { checagemParaTransicao } from '@/lib/matricula/permissoes'
 import { obterGateway } from '@/lib/pagamento'
 import { criarClienteAdmin } from '@/lib/supabase/admin'
@@ -17,11 +19,13 @@ export async function mudarStatus(formData: FormData) {
       matriculaId: z.string().uuid(),
       para: z.enum(STATUS_MATRICULA),
       nota: z.string().trim().max(500).optional(),
+      dataDoFato: z.string().trim().optional(),
     })
     .parse({
       matriculaId: formData.get('matriculaId'),
       para: formData.get('para'),
       nota: formData.get('nota') || undefined,
+      dataDoFato: formData.get('dataDoFato') || undefined,
     })
 
   // A checagem depende do destino: liberar produção é só do admin. Ela roda
@@ -32,9 +36,54 @@ export async function mudarStatus(formData: FormData) {
       ? await exigirAdmin()
       : await exigirEquipe()
 
+  // A entrega é a única transição com data informada, e ela é o marco zero
+  // dos 45 dias — data errada aponta a prova, e a remição que vem dela, para
+  // o dia errado. Por isso valida contra a compra e contra hoje.
+  if (entrada.dataDoFato) {
+    const supabase = criarClienteAdmin()
+    const { data: matricula } = await supabase
+      .from('matriculas')
+      .select('data_compra')
+      .eq('id', entrada.matriculaId)
+      .maybeSingle()
+
+    const validacao = validarDataDeEntrega({
+      data: entrada.dataDoFato,
+      dataCompra: matricula?.data_compra ?? null,
+      hoje: new Date().toISOString().slice(0, 10),
+    })
+    if (!validacao.ok) throw new Error(validacao.erro)
+  }
+
   await avancarStatus({ ...entrada, autorId: perfil.id })
   revalidatePath(`/admin/matriculas/${entrada.matriculaId}`)
   revalidatePath('/admin/matriculas')
+}
+
+export async function salvarDataDeEntrega(
+  _anterior: ResultadoCorrecao | null,
+  formData: FormData,
+): Promise<ResultadoCorrecao> {
+  // Alterar data já gravada é retroativo: mexe na data da prova de um aluno
+  // que já foi informada. Registro rotineiro é da equipe; correção é do admin.
+  const perfil = await exigirAdmin()
+
+  const entrada = z
+    .object({
+      matriculaId: z.string().uuid(),
+      data: z.string().trim(),
+    })
+    .parse({
+      matriculaId: formData.get('matriculaId'),
+      data: formData.get('data'),
+    })
+
+  const resultado = await corrigirDataDeEntrega({ ...entrada, autorId: perfil.id })
+  if (!resultado.ok) return resultado
+
+  revalidatePath(`/admin/matriculas/${entrada.matriculaId}`)
+  revalidatePath('/admin/matriculas')
+  return resultado
 }
 
 const EsquemaCurso = z.object({

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AcoesDeStatus } from '@/components/admin/AcoesDeStatus'
+import { CorrigirDataDeEntrega } from '@/components/admin/CorrigirDataDeEntrega'
 import { Selo } from '@/components/ui/Selo'
 import { obterMatriculaAdmin } from '@/lib/admin/consultas'
 import { reconciliarPagamento } from '@/lib/admin/acoes'
@@ -146,6 +147,17 @@ export default async function DetalheAdmin({
               <dd>{formatarData(m.data_prova)}</dd>
             </div>
           </dl>
+
+          {/* A entrega quase nunca acontece no dia do registro, então a data
+              gravada pode precisar de conserto. Só admin corrige, porque
+              mexer nela move a data da prova do aluno. */}
+          {m.data_inicio && perfil.role === 'admin' && (
+            <CorrigirDataDeEntrega
+              matriculaId={m.id}
+              dataAtual={m.data_inicio}
+              hoje={new Date().toISOString().slice(0, 10)}
+            />
+          )}
         </div>
       </section>
 

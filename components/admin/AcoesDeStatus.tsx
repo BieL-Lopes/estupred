@@ -17,6 +17,7 @@ export function AcoesDeStatus({
   papel: 'admin' | 'colaborador'
 }) {
   const destinos = proximosStatus(status)
+  const hoje = new Date().toISOString().slice(0, 10)
 
   if (destinos.length === 0) {
     return (
@@ -67,6 +68,23 @@ export function AcoesDeStatus({
         <form key={destino} action={mudarStatus} className="flex flex-wrap gap-2">
           <input type="hidden" name="matriculaId" value={matriculaId} />
           <input type="hidden" name="para" value={destino} />
+
+          {/* A entrega é o marco zero dos 45 dias, e quase nunca acontece no
+              dia em que o colaborador registra: a unidade confirma depois. */}
+          {destino === 'material_entregue' && (
+            <label className="text-sm text-texto-suave">
+              <span className="mr-2">Entregue em</span>
+              <input
+                name="dataDoFato"
+                type="date"
+                defaultValue={hoje}
+                max={hoje}
+                required
+                className="rounded-lg border border-borda bg-fundo px-3 py-2 text-sm text-texto"
+              />
+            </label>
+          )}
+
           <input
             name="nota"
             placeholder="Observação (opcional)"

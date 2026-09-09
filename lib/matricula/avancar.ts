@@ -10,8 +10,13 @@ export type EntradaAvanco = {
   para: StatusMatricula
   nota?: string
   autorId?: string
-  /** Só para testes: fixa o "hoje" usado ao carimbar as datas. */
-  hoje?: string
+  /**
+   * Data em que o fato aconteceu, em AAAA-MM-DD. A entrega do material
+   * costuma ser registrada dias depois de a unidade confirmar, então usar a
+   * data do clique apontaria a prova para o dia errado. Ausente significa
+   * hoje.
+   */
+  dataDoFato?: string
 }
 
 export class AlunoOcupadoError extends Error {
@@ -92,13 +97,13 @@ export async function avancarStatus(entrada: EntradaAvanco): Promise<void> {
     if (bloqueio) throw new AlunoOcupadoError(bloqueio)
   }
 
-  const hoje = entrada.hoje ?? hojeIso()
+  const quando = entrada.dataDoFato ?? hojeIso()
 
   // A condição sobre status torna a escrita segura contra corrida: se outro
   // processo já avançou, o update não afeta linha nenhuma.
   const { data: atualizadas, error: erroUpdate } = await supabase
     .from('matriculas')
-    .update({ status: entrada.para, ...datasDaTransicao(entrada.para, hoje) })
+    .update({ status: entrada.para, ...datasDaTransicao(entrada.para, quando) })
     .eq('id', entrada.matriculaId)
     .eq('status', de)
     .select('id')
