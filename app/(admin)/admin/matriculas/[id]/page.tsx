@@ -8,6 +8,7 @@ import { reconciliarPagamento } from '@/lib/admin/acoes'
 import { exigirEquipe } from '@/lib/auth'
 import { formatarCpf } from '@/lib/dominio/cpf'
 import { formatarBRL } from '@/lib/dominio/precos'
+import { etapasAteAEntrega } from '@/lib/matricula/datas'
 import { ROTULO_STATUS, type StatusMatricula } from '@/lib/dominio/tipos'
 
 export const metadata = { title: 'Matrícula — Clique Estudos' }
@@ -54,6 +55,8 @@ export default async function DetalheAdmin({
     } | null
     profiles: { nome: string; email: string; telefone: string } | null
   }
+
+  const faltamEtapas = etapasAteAEntrega(m.status)
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
@@ -147,6 +150,21 @@ export default async function DetalheAdmin({
               <dd>{formatarData(m.data_prova)}</dd>
             </div>
           </dl>
+
+          {/* Sem esta linha o bloco mostra só um traço, e quem olha não
+              descobre que a data entra no botão da entrega, mais abaixo. Foi
+              exatamente a dúvida que o cliente levantou. */}
+          {!m.data_inicio && faltamEtapas !== null && (
+            <p className="mt-4 border-t border-borda pt-4 text-xs text-texto-fraco">
+              A data de início é informada ao marcar a entrega do material, no
+              bloco <span className="text-texto-suave">Avançar status</span>,
+              abaixo.{' '}
+              {faltamEtapas === 1
+                ? 'É o próximo passo desta matrícula.'
+                : `Faltam ${faltamEtapas} etapas até lá.`}{' '}
+              A data da prova é calculada a partir dela.
+            </p>
+          )}
 
           {/* A entrega quase nunca acontece no dia do registro, então a data
               gravada pode precisar de conserto. Só admin corrige, porque

@@ -10,6 +10,9 @@
  * resultado não depender de quando o teste roda.
  */
 
+import type { StatusMatricula } from '@/lib/dominio/tipos'
+import { proximosStatus } from './transicoes'
+
 export type ResultadoValidacao = { ok: true } | { ok: false; erro: string }
 
 const FORMATO = /^\d{4}-\d{2}-\d{2}$/
@@ -36,4 +39,43 @@ export function validarDataDeEntrega(entrada: {
   }
 
   return { ok: true }
+}
+
+/**
+ * Quantas transições faltam da etapa atual até a entrega do material, ou
+ * null se a entrega não é mais alcançável — depois da prova não se volta, e
+ * cancelada é terminal.
+ *
+ * Serve para a tela explicar onde a data de início vai ser informada, em vez
+ * de mostrar só um traço. O bloco "Datas do curso" fica antes de "Avançar
+ * status", e sem essa explicação quem olha não descobre que a data entra no
+ * botão da entrega, três cliques adiante.
+ *
+ * Percorre o grafo em largura, com conjunto de visitados: `reprovado` volta
+ * para `prova_aplicada`, e sem isso o laço não terminaria.
+ */
+export function etapasAteAEntrega(status: StatusMatricula): number | null {
+  if (status === 'material_entregue') return 0
+
+  const visitados = new Set<StatusMatricula>([status])
+  let fronteira: StatusMatricula[] = [status]
+  let passos = 0
+
+  while (fronteira.length > 0) {
+    passos += 1
+    const proxima: StatusMatricula[] = []
+
+    for (const atual of fronteira) {
+      for (const destino of proximosStatus(atual)) {
+        if (destino === 'material_entregue') return passos
+        if (visitados.has(destino)) continue
+        visitados.add(destino)
+        proxima.push(destino)
+      }
+    }
+
+    fronteira = proxima
+  }
+
+  return null
 }
