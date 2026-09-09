@@ -20,7 +20,7 @@ export default async function CursosAdmin({
       <h1 className="text-2xl font-bold text-texto">Cursos</h1>
 
       <details className="mt-8 rounded-cartao border border-borda bg-cartao p-6">
-        <summary className="cursor-pointer font-semibold text-acento">Novo curso</summary>
+        <summary className="font-semibold text-acento">Novo curso</summary>
         <div className="mt-4">
           <FormularioCurso />
         </div>
@@ -39,7 +39,7 @@ export default async function CursosAdmin({
         {cursos.map((c) => (
           <li key={c.id} className="rounded-cartao border border-borda bg-cartao">
             <details>
-              <summary className="cursor-pointer p-4">
+              <summary className="p-4">
                 <span className="font-medium text-texto">{c.titulo}</span>
                 <span className="ml-3 text-sm text-texto-fraco">
                   {c.carga_horaria}h · {formatarBRL(c.preco_centavos)}

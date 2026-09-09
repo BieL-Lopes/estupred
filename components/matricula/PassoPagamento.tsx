@@ -91,7 +91,7 @@ export function PassoPagamento({
         {METODOS.map((opcao) => (
           <label
             key={opcao.valor}
-            className={`flex cursor-pointer items-center gap-3 rounded-cartao border p-4 ${
+            className={`flex items-center gap-3 rounded-cartao border p-4 ${
               metodo === opcao.valor
                 ? 'border-acento bg-acento-fundo'
                 : 'border-borda bg-cartao'

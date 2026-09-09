@@ -50,6 +50,37 @@ body {
   font-family: var(--font-sans);
 }
 
+/* O Tailwind v4 deixou de aplicar `cursor: pointer` em <button> — mudança
+   deliberada deles para seguir o padrão do navegador. O efeito prático é que
+   nada no código parece errado e nenhum botão do produto avisa que é
+   clicável. Resolvido aqui, uma vez, para qualquer elemento novo já nascer
+   certo em vez de depender de alguém lembrar da classe. */
+button,
+summary,
+select,
+[role='button'],
+input[type='checkbox'],
+input[type='radio'],
+input[type='file'],
+::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+/* O rótulo de uma caixa de seleção também alterna o campo, então precisa da
+   mesma pista visual. */
+label:has(> input[type='checkbox']),
+label:has(> input[type='radio']) {
+  cursor: pointer;
+}
+
+/* Desabilitado não é clicável: cursor de mão ali prometeria o que não
+   acontece. Vale para o BotaoSubmit enquanto a Server Action roda. */
+button:disabled,
+select:disabled,
+input:disabled {
+  cursor: not-allowed;
+}
+
 ::selection {
   background: var(--color-acento);
   color: #0f172a;

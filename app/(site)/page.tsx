@@ -293,7 +293,7 @@ export default async function Home() {
               key={duvida.p}
               className="group rounded-cartao border border-borda bg-cartao px-6 py-5"
             >
-              <summary className="flex cursor-pointer items-center justify-between gap-4 font-medium text-texto">
+              <summary className="flex items-center justify-between gap-4 font-medium text-texto">
                 {duvida.p}
                 <span
                   className="text-acento transition group-open:rotate-45"

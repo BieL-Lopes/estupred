@@ -47,7 +47,7 @@ export default async function UnidadesAdmin({
       <h1 className="text-2xl font-bold text-texto">Unidades prisionais</h1>
 
       <details className="mt-8 rounded-cartao border border-borda bg-cartao p-6">
-        <summary className="cursor-pointer font-semibold text-acento">Nova unidade</summary>
+        <summary className="font-semibold text-acento">Nova unidade</summary>
         <div className="mt-4">
           <FormularioUnidade />
         </div>
@@ -77,7 +77,7 @@ export default async function UnidadesAdmin({
             {unidades.map((u) => (
               <li key={u.id} className="rounded-cartao border border-borda bg-cartao">
                 <details>
-                  <summary className="cursor-pointer p-4">
+                  <summary className="p-4">
                     <span className="font-mono text-sm font-bold text-acento">{u.uf}</span>
                     <span className="ml-3 font-medium text-texto">{u.nome}</span>
                     {!u.ativa && <span className="ml-3 text-sm text-texto-fraco">inativa</span>}
