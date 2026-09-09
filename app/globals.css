@@ -35,6 +35,13 @@ html {
   /* O cabeçalho é sticky (~64px). Sem isso, pular para uma âncora (#duvidas
      etc.) deixa o título escondido atrás dele. */
   scroll-padding-top: 5rem;
+
+  /* Avisa o navegador que a interface é escura, para ele desenhar os
+     controles nativos de acordo. Sem isso o ícone de calendário dos campos
+     de data sai escuro sobre fundo escuro — invisível — e o seletor que abre
+     ao clicar vem branco, brigando com o resto da tela. Vale também para
+     dropdown de select e barra de rolagem. */
+  color-scheme: dark;
 }
 
 body {
