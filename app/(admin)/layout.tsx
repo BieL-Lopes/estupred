@@ -1,3 +1,4 @@
+import { LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { sair } from '@/app/(site)/entrar/acoes'
 import { NavAdmin } from '@/components/admin/NavAdmin'
@@ -39,14 +40,25 @@ export default async function LayoutAdmin({
 
           <NavAdmin links={links} />
 
-          <form action={sair} className="ml-auto">
-            <button
-              type="submit"
-              className="text-sm text-texto-suave transition-colors hover:text-acento"
-            >
-              Sair
-            </button>
-          </form>
+          <div className="ml-auto flex items-center gap-3">
+            <div className="text-right leading-tight">
+              <p className="text-sm font-medium text-texto">{perfil.nome}</p>
+              <p className="text-xs text-texto-fraco">
+                {perfil.role === 'admin' ? 'Admin' : 'Colaborador'}
+              </p>
+            </div>
+
+            <form action={sair}>
+              <button
+                type="submit"
+                aria-label="Sair"
+                title="Sair"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-texto-suave transition-colors hover:bg-cartao hover:text-acento"
+              >
+                <LogOut className="h-5 w-5" aria-hidden />
+              </button>
+            </form>
+          </div>
         </div>
       </header>
       {children}

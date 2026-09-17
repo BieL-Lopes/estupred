@@ -17,10 +17,15 @@ function formatarData(data: string | null): string {
 
 export default async function DetalheAluno({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ voltar?: string }>
 }) {
   const { id } = await params
+  const { voltar } = await searchParams
+  const linkVoltar =
+    voltar && voltar.startsWith('/') && !voltar.startsWith('//') ? voltar : '/admin/alunos'
   const resultado = await obterAlunoAdmin(id)
   if (!resultado) notFound()
 
@@ -38,8 +43,8 @@ export default async function DetalheAluno({
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
-      <Link href="/admin/alunos" className="text-sm text-acento hover:underline">
-        ← Alunos
+      <Link href={linkVoltar} className="text-sm text-acento hover:underline">
+        ← Voltar
       </Link>
 
       <h1 className="mt-4 text-2xl font-bold text-texto">{interno.nome}</h1>

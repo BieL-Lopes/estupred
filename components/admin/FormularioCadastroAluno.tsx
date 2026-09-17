@@ -23,11 +23,15 @@ export function FormularioCadastroAluno({ unidades }: { unidades: Unidade[] }) {
         <legend className="font-semibold text-texto">Dados do aluno</legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block sm:col-span-2">
-            <span className="text-sm font-medium text-texto">Nome completo</span>
+            <span className="text-sm font-medium text-texto">
+              Nome completo <span className="text-red-400">*</span>
+            </span>
             <input name="nome" className={campo} required />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-texto">CPF</span>
+            <span className="text-sm font-medium text-texto">
+              CPF <span className="text-red-400">*</span>
+            </span>
             <input name="cpf" className={campo} required />
           </label>
           <label className="block">
@@ -35,15 +39,13 @@ export function FormularioCadastroAluno({ unidades }: { unidades: Unidade[] }) {
             <input name="rg" className={campo} />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-texto">Matrícula prisional</span>
-            <input name="matriculaPrisional" className={campo} required />
-          </label>
-          <label className="block">
             <span className="text-sm font-medium text-texto">Data de nascimento</span>
             <input name="dataNascimento" type="date" className={campo} />
           </label>
           <label className="block sm:col-span-2">
-            <span className="text-sm font-medium text-texto">Unidade prisional</span>
+            <span className="text-sm font-medium text-texto">
+              Unidade prisional <span className="text-red-400">*</span>
+            </span>
             <select name="unidadeId" className={campo} required>
               <option value="">Selecione</option>
               {unidades.map((u) => (

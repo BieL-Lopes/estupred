@@ -94,7 +94,7 @@ export default async function NovaMatricula({
               </span>
             </p>
             <Link
-              href={`/admin/alunos/${aluno.id}`}
+              href={`/admin/alunos/${aluno.id}?voltar=${encodeURIComponent(`/admin/matriculas/nova?cpf=${cpfBruto}`)}`}
               className="mt-3 inline-block text-sm text-acento hover:underline"
             >
               Ver cadastro completo

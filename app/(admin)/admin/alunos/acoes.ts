@@ -26,10 +26,11 @@ export async function cadastrarAluno(
   const unidadeId = String(formData.get('unidadeId') ?? '')
   if (!unidadeId) return { ok: false, erro: 'Selecione a unidade prisional' }
 
-  const interno = EsquemaInterno.safeParse({
+  // Matrícula prisional não é exigida neste cadastro por enquanto: o
+  // colaborador pode não ter esse dado em mãos ainda.
+  const interno = EsquemaInterno.partial({ matriculaPrisional: true }).safeParse({
     nome: formData.get('nome'),
     cpf: formData.get('cpf'),
-    matriculaPrisional: formData.get('matriculaPrisional'),
     rg: formData.get('rg') || undefined,
     dataNascimento: formData.get('dataNascimento') || undefined,
   })
@@ -64,7 +65,7 @@ export async function cadastrarAluno(
   }
 
   const resultado = await cadastrarAlunoNovo({
-    interno: interno.data,
+    interno: { ...interno.data, matriculaPrisional: interno.data.matriculaPrisional ?? '' },
     unidadeId,
     responsavel,
   })
